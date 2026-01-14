@@ -3,87 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZONA GAMER | Admin Fix</title>
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Orbitron:wght@700&family=Fira+Code:wght@400&display=swap" rel="stylesheet">
+    <title>SISTEMA ADMIN | RECOVERY</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Fira+Code:wght@400&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #030508; --card: #0d1117; --neon: #00f2ff; --text: #e0e6ed; --success: #39FF14; --error: #ff3131; }
-        body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Rajdhani', sans-serif; }
-        
-        /* Pantalla de Carga */
-        #loading-screen { 
-            position: fixed; inset: 0; background: #000; z-index: 9999; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; 
-        }
-        .loader { width: 40px; height: 40px; border: 3px solid #111; border-top-color: var(--neon); border-radius: 50%; animation: spin 1s linear infinite; }
+        body { margin: 0; background: #030508; color: #e0e6ed; font-family: sans-serif; }
+        #loading-overlay { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #111; border-top-color: #00f2ff; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* Estructura */
-        header { background: var(--card); padding: 15px 25px; border-bottom: 2px solid var(--neon); display: flex; justify-content: space-between; align-items: center; }
-        .grid { max-width: 1200px; margin: 20px auto; padding: 0 15px; display: grid; grid-template-columns: 300px 1fr; gap: 20px; }
-        @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
-
-        .card { background: var(--card); border: 1px solid #1a1f26; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
-        input, textarea { width: 100%; padding: 10px; background: #000; border: 1px solid #222; color: #fff; margin-bottom: 10px; font-family: 'Fira Code'; }
         
-        .btn { width: 100%; padding: 12px; border: none; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; border-radius: 4px; }
-        .btn-neon { background: var(--neon); color: #000; }
-        
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        th { text-align: left; color: var(--neon); padding: 10px; border-bottom: 1px solid #222; font-family: 'Orbitron'; font-size: 0.6rem; }
-        td { padding: 10px; border-bottom: 1px solid #0a0e14; }
-        .act-btn { background: #111; border: 1px solid #333; color: #fff; padding: 5px; cursor: pointer; font-size: 0.6rem; margin-right: 2px; }
+        .card { background: #0d1117; border: 1px solid #1a1f26; padding: 20px; border-radius: 8px; margin: 10px; }
+        header { background: #0d1117; padding: 15px; border-bottom: 2px solid #00f2ff; display: flex; justify-content: space-between; }
+        button { cursor: pointer; padding: 10px; font-family: 'Orbitron'; font-size: 0.7rem; border-radius: 4px; border: none; }
+        .btn-neon { background: #00f2ff; color: #000; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { text-align: left; color: #00f2ff; font-size: 0.7rem; padding: 10px; border-bottom: 1px solid #222; }
+        td { padding: 10px; border-bottom: 1px solid #111; font-size: 0.8rem; }
     </style>
 </head>
 <body>
 
-    <div id="loading-screen">
-        <div class="loader"></div>
-        <p id="status-text" style="font-family:'Orbitron'; font-size:0.7rem; margin-top:15px;">INICIANDO SESIÓN...</p>
-        <button onclick="location.href='index.html'" style="margin-top:20px; background:none; border:1px solid #333; color:#555; cursor:pointer; padding:5px 10px;">CANCELAR / VOLVER</button>
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <p id="load-msg" style="font-family:'Orbitron'; margin-top:20px;">INICIANDO SESIÓN...</p>
+        <div id="emergency-btns" style="display:none; margin-top:20px;">
+            <button onclick="location.href='index.html'" style="background:#333; color:#fff;">VOLVER AL LOGIN</button>
+            <button onclick="location.reload()" style="background:#00f2ff; color:#000;">REINTENTAR</button>
+        </div>
     </div>
 
     <header>
-        <div style="font-family:'Orbitron'; color:var(--neon)">ZONA_ADMIN_PANEL</div>
-        <button class="act-btn" onclick="window.logout()" style="color:var(--error)">SALIR</button>
+        <div style="font-family:'Orbitron'; color:#00f2ff;">CORE_ADMIN</div>
+        <button onclick="window.handleLogout()" style="background:#ff3131; color:#fff;">LOGOUT</button>
     </header>
 
-    <div class="grid">
-        <aside>
-            <div class="card">
-                <h4 style="font-family:'Orbitron'; font-size:0.6rem; color:var(--neon)">COMUNICADO GLOBAL</h4>
-                <textarea id="sys-msg" placeholder="Mensaje a todos..."></textarea>
-                <button class="btn btn-neon" onclick="window.sendBroadcast()">ENVIAR</button>
-            </div>
-            <div class="card">
-                <h4 style="font-family:'Orbitron'; font-size:0.6rem; color:var(--neon)">NUEVA OPERACIÓN</h4>
-                <input type="text" id="m-name" placeholder="Título">
-                <textarea id="m-desc" placeholder="Instrucciones"></textarea>
-                <button class="btn btn-neon" onclick="window.newMission()">DESPLEGAR</button>
-            </div>
-        </aside>
+    <div style="max-width: 1000px; margin: 20px auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div class="card">
+            <h3 style="font-family:'Orbitron'; font-size:0.8rem;">ANUNCIO SISTEMA</h3>
+            <textarea id="msg-input" style="width:100%; background:#000; color:#fff; border:1px solid #333; padding:10px;"></textarea>
+            <button onclick="window.sendBroadcast()" class="btn-neon" style="margin-top:10px; width:100%;">ENVIAR A TODOS</button>
+        </div>
+        
+        <div class="card">
+            <h3 style="font-family:'Orbitron'; font-size:0.8rem;">ESTADÍSTICAS</h3>
+            <p>Usuarios: <span id="user-count">0</span></p>
+        </div>
 
-        <main>
-            <div class="card">
-                <h4 style="font-family:'Orbitron'; font-size:0.6rem; color:var(--neon)">OPERATIVOS REGISTRADOS</h4>
-                <div style="overflow-x:auto">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>NICK</th>
-                                <th>PUNTOS</th>
-                                <th>ACCIONES</th>
-                            </tr>
-                        </thead>
-                        <tbody id="user-list"></tbody>
-                    </table>
-                </div>
-            </div>
-        </main>
+        <div class="card" style="grid-column: 1 / -1;">
+            <h3 style="font-family:'Orbitron'; font-size:0.8rem;">LISTA DE OPERATIVOS</h3>
+            <table>
+                <thead>
+                    <tr><th>NICK</th><th>PUNTOS</th><th>ACCIONES</th></tr>
+                </thead>
+                <tbody id="user-list"></tbody>
+            </table>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, collection, deleteDoc, increment, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, onSnapshot, collection, updateDoc, increment, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -99,45 +77,50 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // --- VERIFICACIÓN DE IDENTIDAD ---
+        // Timer de emergencia: Si en 6 segundos no carga, mostrar botones
+        setTimeout(() => {
+            if(document.getElementById('loading-overlay').style.display !== 'none') {
+                document.getElementById('load-msg').innerText = "ERROR: TIEMPO DE ESPERA AGOTADO";
+                document.getElementById('emergency-btns').style.display = 'block';
+            }
+        }, 6000);
+
         onAuthStateChanged(auth, async (user) => {
-            const status = document.getElementById('status-text');
+            const msg = document.getElementById('load-msg');
             if (user) {
-                status.innerText = "VERIFICANDO PERMISOS...";
+                msg.innerText = "BUSCANDO CREDENCIALES...";
                 try {
-                    const d = await getDoc(doc(db, "usuarios", user.uid));
-                    if (d.exists() && d.data().admin === true) {
-                        document.getElementById('loading-screen').style.display = 'none';
-                        startApp();
+                    const snap = await getDoc(doc(db, "usuarios", user.uid));
+                    if (snap.exists() && snap.data().admin === true) {
+                        document.getElementById('loading-overlay').style.display = 'none';
+                        loadUsers();
                     } else {
-                        status.style.color = "red";
-                        status.innerText = "ACCESO DENEGADO: NO ERES ADMIN";
-                        setTimeout(() => window.location.href = "index.html", 2000);
+                        msg.innerHTML = "<span style='color:red'>ACCESO DENEGADO</span><br>No tienes rango admin en Firestore.";
+                        document.getElementById('emergency-btns').style.display = 'block';
                     }
-                } catch (e) {
-                    status.innerText = "ERROR DE CONEXIÓN A FIRESTORE";
-                    console.error(e);
+                } catch (err) {
+                    msg.innerText = "ERROR DE FIRESTORE: Revisa las reglas.";
+                    document.getElementById('emergency-btns').style.display = 'block';
                 }
             } else {
                 window.location.href = "index.html";
             }
         });
 
-        function startApp() {
-            // Cargar Usuarios
+        function loadUsers() {
             onSnapshot(collection(db, "usuarios"), (snap) => {
                 const list = document.getElementById('user-list');
+                document.getElementById('user-count').innerText = snap.size;
                 list.innerHTML = "";
                 snap.forEach(d => {
                     const u = d.data();
                     list.innerHTML += `
                         <tr>
-                            <td><b>${u.nick}</b><br><small style="color:#444">${u.uid}</small></td>
-                            <td style="color:var(--success)">${u.puntos} XP</td>
+                            <td>${u.nick}</td>
+                            <td style="color:#39FF14">${u.puntos} XP</td>
                             <td>
-                                <button class="act-btn" onclick="window.addXP('${d.id}', 100)">+100</button>
-                                <button class="act-btn" onclick="window.addXP('${d.id}', -100)">-100</button>
-                                <button class="act-btn" onclick="window.delUser('${d.id}')" style="color:var(--error)">DEL</button>
+                                <button onclick="window.updateXP('${d.id}', 100)" style="background:#222; color:#fff;">+100</button>
+                                <button onclick="window.updateXP('${d.id}', -100)" style="background:#222; color:#fff;">-100</button>
                             </td>
                         </tr>
                     `;
@@ -145,39 +128,22 @@
             });
         }
 
-        // --- FUNCIONES GLOBALES ---
-        window.addXP = async (id, val) => {
-            await updateDoc(doc(db, "usuarios", id), { puntos: increment(val) });
-        };
-
-        window.delUser = async (id) => {
-            if(confirm("¿BORRAR USUARIO?")) await deleteDoc(doc(db, "usuarios", id));
+        // EXPORTAR FUNCIONES A WINDOW PARA LOS BOTONES
+        window.updateXP = async (id, qty) => {
+            await updateDoc(doc(db, "usuarios", id), { puntos: increment(qty) });
         };
 
         window.sendBroadcast = async () => {
-            const t = document.getElementById('sys-msg').value;
-            if(!t) return;
+            const val = document.getElementById('msg-input').value;
+            if(!val) return;
             await addDoc(collection(db, "chat_global"), {
-                nick: "SYSTEM", text: t.toUpperCase(), role: "admin", timestamp: serverTimestamp()
+                nick: "SYSTEM", text: val.toUpperCase(), role: "admin", timestamp: serverTimestamp()
             });
-            document.getElementById('sys-msg').value = "";
-            alert("MENSAJE ENVIADO");
+            document.getElementById('msg-input').value = "";
+            alert("ENVIADO");
         };
 
-        window.newMission = async () => {
-            const n = document.getElementById('m-name').value;
-            const d = document.getElementById('m-desc').value;
-            if(!n) return;
-            await addDoc(collection(db, "torneos"), {
-                nombre: n, desc: d, inscritos_count: 0, jugadores: [], active: true
-            });
-            document.getElementById('m-name').value = "";
-            document.getElementById('m-desc').value = "";
-            alert("OPERACIÓN DESPLEGADA");
-        };
-
-        window.logout = () => signOut(auth).then(() => location.href = "index.html");
-
+        window.handleLogout = () => signOut(auth).then(() => location.href='index.html');
     </script>
 </body>
 </html>
