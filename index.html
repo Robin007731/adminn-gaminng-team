@@ -3,166 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZONA GAMER | Master Admin Console</title>
+    <title>ZONA GAMER | Master Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Orbitron:wght@700&family=Fira+Code:wght@400&display=swap" rel="stylesheet">
     <style>
         :root { 
             --bg: #030508; --card: #0d1117; --neon: #00f2ff; --text: #e0e6ed; 
             --success: #39FF14; --gold: #ffcc00; --error: #ff3131; --border: #1a1f26;
         }
-
         * { box-sizing: border-box; outline: none; }
-        body { 
-            margin: 0; background: var(--bg); color: var(--text); 
-            font-family: 'Rajdhani', sans-serif; overflow-x: hidden;
-        }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Rajdhani', sans-serif; }
 
         /* --- NOTIFICACIONES --- */
         #toast-container { position: fixed; top: 20px; right: 20px; z-index: 10000; }
-        .toast { 
-            background: #000; border: 1px solid var(--neon); color: #fff;
-            padding: 15px 25px; margin-bottom: 10px; font-family: 'Fira Code';
-            font-size: 0.8rem; box-shadow: 0 0 15px rgba(0,242,255,0.3);
-            animation: slideIn 0.3s ease; border-radius: 4px;
-        }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .toast { background: #000; border: 1px solid var(--neon); color: #fff; padding: 12px 20px; margin-bottom: 10px; font-family: 'Fira Code'; font-size: 0.8rem; border-radius: 4px; animation: slide 0.3s ease; }
+        @keyframes slide { from { transform: translateX(100%); } to { transform: translateX(0); } }
 
-        /* --- PANTALLA DE CARGA --- */
-        #auth-lock { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; }
-        .spinner { width: 50px; height: 50px; border: 3px solid #111; border-top: 3px solid var(--neon); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        /* --- UI ELEMENTS --- */
+        header { background: var(--card); padding: 15px 30px; border-bottom: 2px solid var(--neon); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .container { max-width: 1300px; margin: 20px auto; padding: 0 15px; display: grid; grid-template-columns: 320px 1fr; gap: 20px; }
+        @media (max-width: 950px) { .container { grid-template-columns: 1fr; } }
 
-        /* --- HEADER --- */
-        header { 
-            background: var(--card); padding: 15px 40px; border-bottom: 2px solid var(--neon);
-            display: flex; justify-content: space-between; align-items: center;
-            position: sticky; top: 0; z-index: 1000;
-        }
-        .admin-tag { font-family: 'Orbitron'; font-size: 0.9rem; letter-spacing: 2px; }
+        .card { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .card-h { font-family: 'Orbitron'; font-size: 0.7rem; color: var(--neon); border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; }
 
-        /* --- GRID LAYOUT --- */
-        .dashboard { 
-            max-width: 1400px; margin: 30px auto; padding: 0 20px; 
-            display: grid; grid-template-columns: 350px 1fr; gap: 30px; 
-        }
-        @media (max-width: 1000px) { .dashboard { grid-template-columns: 1fr; } }
-
-        /* --- COMPONENTES --- */
-        .card { 
-            background: var(--card); border: 1px solid var(--border); 
-            padding: 20px; border-radius: 8px; margin-bottom: 25px;
-        }
-        .card-header { 
-            font-family: 'Orbitron'; font-size: 0.7rem; color: var(--neon); 
-            border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 20px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-
-        /* --- FORMULARIOS --- */
-        .field { margin-bottom: 15px; }
-        label { display: block; font-size: 0.6rem; font-family: 'Orbitron'; margin-bottom: 6px; color: #666; }
-        input, textarea, select { 
-            width: 100%; padding: 12px; background: #000; border: 1px solid var(--border); 
-            color: #fff; font-family: 'Fira Code'; font-size: 0.8rem; border-radius: 4px;
-        }
-        input:focus { border-color: var(--neon); }
-
-        .btn { 
-            width: 100%; padding: 12px; border: none; font-family: 'Orbitron'; 
-            font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.7rem;
-            transition: 0.3s; border-radius: 4px;
-        }
+        input, textarea { width: 100%; padding: 10px; background: #000; border: 1px solid var(--border); color: #fff; font-family: 'Fira Code'; font-size: 0.8rem; margin-bottom: 10px; border-radius: 4px; }
+        .btn { width: 100%; padding: 12px; border: none; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.7rem; border-radius: 4px; transition: 0.2s; }
         .btn-neon { background: var(--neon); color: #000; }
-        .btn-neon:hover { box-shadow: 0 0 20px rgba(0,242,255,0.4); }
-        .btn-danger { background: transparent; border: 1px solid var(--error); color: var(--error); }
-        .btn-danger:hover { background: var(--error); color: #fff; }
+        .btn-neon:hover { filter: brightness(1.2); box-shadow: 0 0 10px var(--neon); }
 
-        /* --- TABLA DE USUARIOS --- */
-        .user-table { width: 100%; border-collapse: collapse; font-family: 'Fira Code'; font-size: 0.8rem; }
-        .user-table th { text-align: left; padding: 15px; color: #444; font-size: 0.6rem; font-family: 'Orbitron'; border-bottom: 1px solid var(--border); }
-        .user-table td { padding: 12px 15px; border-bottom: 1px solid #0a0e14; }
-        .row-user { display: flex; align-items: center; gap: 10px; }
-        .row-img { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); }
+        /* --- TABLE --- */
+        table { width: 100%; border-collapse: collapse; font-family: 'Fira Code'; font-size: 0.8rem; }
+        th { text-align: left; padding: 10px; color: #444; font-size: 0.6rem; font-family: 'Orbitron'; border-bottom: 1px solid var(--border); }
+        td { padding: 10px; border-bottom: 1px solid #0a0e14; }
+        .action-btn { background: #111; border: 1px solid #222; color: #fff; padding: 4px 8px; cursor: pointer; font-size: 0.6rem; margin-right: 2px; border-radius: 3px; }
+        .action-btn:hover { border-color: var(--neon); color: var(--neon); }
 
-        .action-icon { 
-            background: #111; border: 1px solid var(--border); color: #fff; 
-            padding: 5px 8px; cursor: pointer; font-size: 0.65rem; transition: 0.2s;
-        }
-        .action-icon:hover { border-color: var(--neon); color: var(--neon); }
-
-        .badge { font-size: 0.5rem; padding: 2px 5px; border-radius: 3px; font-weight: bold; }
-        .badge-v { background: var(--neon); color: #000; }
+        #loading { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; align-items: center; justify-content: center; font-family: 'Orbitron'; color: var(--neon); }
     </style>
 </head>
 <body>
 
+    <div id="loading">CONECTANDO AL SATÉLITE...</div>
     <div id="toast-container"></div>
 
-    <div id="auth-lock">
-        <div class="spinner"></div>
-        <p style="font-family:'Orbitron'; font-size:0.7rem; margin-top:20px; letter-spacing:3px;">LINKING_SYSTEM...</p>
-    </div>
-
     <header>
-        <div class="admin-tag">ZONA_<span style="color:var(--neon)">ADMIN</span>_V2</div>
-        <div style="display:flex; gap:20px;">
-            <button class="action-icon" onclick="location.reload()">REFRESH</button>
-            <button class="action-icon" onclick="logout()" style="color:var(--error)">LOGOUT</button>
-        </div>
+        <div style="font-family:'Orbitron'; font-size: 1rem;">ZONA_<span style="color:var(--neon)">ADMIN</span></div>
+        <button class="action-btn" onclick="window.logout()" style="color:var(--error); border-color:var(--error)">LOGOUT</button>
     </header>
 
-    <div class="dashboard">
-        
+    <div class="container">
         <aside>
             <div class="card">
-                <div class="card-header">CORE_INTERFACE <span>COLOR</span></div>
-                <div class="field">
-                    <input type="color" id="conf-color" onchange="updateSystemColor(this.value)">
-                </div>
+                <div class="card-h">COLOR_SISTEMA</div>
+                <input type="color" id="color-picker" onchange="window.updateColor(this.value)">
             </div>
 
             <div class="card">
-                <div class="card-header">GLOBAL_BROADCAST <span>SYSTEM</span></div>
-                <div class="field">
-                    <textarea id="sys-msg" rows="2" placeholder="Escribe un mensaje para todos..."></textarea>
-                </div>
-                <button class="btn btn-neon" onclick="sendGlobalMsg()">ENVIAR A TODOS</button>
+                <div class="card-h">MENSAJE_GLOBAL</div>
+                <textarea id="msg-text" rows="2" placeholder="Escribir mensaje de sistema..."></textarea>
+                <button class="btn btn-neon" onclick="window.sendGlobalMsg()">BROADCAST</button>
             </div>
 
             <div class="card">
-                <div class="card-header">MISSION_DEPLOY <span>NEW</span></div>
-                <div class="field">
-                    <label>NOMBRE DEL TORNEO</label>
-                    <input type="text" id="m-name" placeholder="Ej: DUOS WARZONE">
-                </div>
-                <div class="field">
-                    <label>DESCRIPCIÓN</label>
-                    <textarea id="m-desc" rows="3" placeholder="Reglas, premios, etc..."></textarea>
-                </div>
-                <button class="btn btn-neon" onclick="deployMission()">LANZAR MISIÓN</button>
+                <div class="card-h">NUEVA_MISIÓN</div>
+                <input type="text" id="m-name" placeholder="Nombre Misión">
+                <textarea id="m-desc" rows="2" placeholder="Descripción"></textarea>
+                <button class="btn btn-neon" onclick="window.createMission()">DESPLEGAR</button>
             </div>
         </aside>
 
         <main>
             <div class="card">
-                <div class="card-header">OPERATIVE_DATABASE <span id="user-count">0</span></div>
+                <div class="card-h">BASE_DATOS_USUARIOS <span id="count">0</span></div>
                 <div style="overflow-x: auto;">
-                    <table class="user-table">
+                    <table>
                         <thead>
                             <tr>
                                 <th>OPERATIVO</th>
-                                <th>XP_TOTAL</th>
+                                <th>PUNTOS</th>
                                 <th>WHATSAPP</th>
                                 <th>ACCIONES</th>
                             </tr>
                         </thead>
-                        <tbody id="user-list">
-                            </tbody>
+                        <tbody id="user-table"></tbody>
                     </table>
                 </div>
             </div>
         </main>
-
     </div>
 
     <script type="module">
@@ -183,99 +110,91 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // --- NOTIFICACIONES ---
+        // --- NOTIFICACIÓN ---
         window.notify = (msg) => {
             const container = document.getElementById('toast-container');
             const t = document.createElement('div');
             t.className = 'toast';
-            t.innerText = `> ${msg}`;
+            t.innerText = msg;
             container.appendChild(t);
             setTimeout(() => t.remove(), 3000);
         };
 
-        // --- SEGURIDAD ---
-        onAuthStateChanged(auth, async user => {
+        // --- AUTH & SEGURIDAD ---
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
-                const d = await getDoc(doc(db, "usuarios", user.uid));
-                if (d.exists() && d.data().admin === true) {
-                    document.getElementById('auth-lock').style.display = 'none';
-                    initAdmin();
+                const userDoc = await getDoc(doc(db, "usuarios", user.uid));
+                if (userDoc.exists() && userDoc.data().admin === true) {
+                    document.getElementById('loading').style.display = 'none';
+                    initAdminData();
                 } else {
                     alert("ACCESO DENEGADO");
-                    window.location.href = "index.html";
+                    window.location.href = 'index.html';
                 }
             } else {
-                window.location.href = "index.html";
+                window.location.href = 'index.html';
             }
         });
 
-        function initAdmin() {
-            // Escuchar Usuarios
-            onSnapshot(collection(db, "usuarios"), snap => {
-                const list = document.getElementById('user-list');
-                document.getElementById('user-count').innerText = snap.size;
-                list.innerHTML = "";
+        // --- CARGA DE DATOS ---
+        function initAdminData() {
+            // Tabla de Usuarios
+            onSnapshot(collection(db, "usuarios"), (snap) => {
+                const tbody = document.getElementById('user-table');
+                document.getElementById('count').innerText = snap.size;
+                tbody.innerHTML = "";
                 snap.forEach(d => {
                     const u = d.data();
-                    list.innerHTML += `
+                    tbody.innerHTML += `
                         <tr>
-                            <td>
-                                <div class="row-user">
-                                    <img src="${u.avatar}" class="row-img">
-                                    <div>
-                                        <div style="font-weight:bold">${u.nick}</div>
-                                        ${u.verificado ? '<span class="badge badge-v">VERIFICADO</span>' : ''}
-                                    </div>
-                                </div>
-                            </td>
+                            <td style="font-weight:bold">${u.nick} ${u.verificado ? '✅' : ''}</td>
                             <td style="color:var(--success)">${u.puntos} XP</td>
-                            <td style="color:#666; font-size:0.7rem">${u.whatsapp || 'N/A'}</td>
+                            <td style="color:#555">${u.whatsapp || '---'}</td>
                             <td>
-                                <button class="action-icon" onclick="giveXP('${d.id}', 100)">+100</button>
-                                <button class="action-icon" onclick="giveXP('${d.id}', -100)">-100</button>
-                                <button class="action-icon" onclick="toggleV('${d.id}', ${u.verificado})">V</button>
-                                <button class="action-icon" onclick="delUser('${d.id}')" style="color:var(--error)">DEL</button>
+                                <button class="action-btn" onclick="window.addXP('${d.id}', 100)">+100</button>
+                                <button class="action-btn" onclick="window.toggleV('${d.id}', ${u.verificado})">VERIF</button>
+                                <button class="action-btn" onclick="window.delUser('${d.id}')" style="color:var(--error)">ELIM</button>
                             </td>
                         </tr>
                     `;
                 });
             });
 
-            // Escuchar Config Color
-            onSnapshot(doc(db, "config", "global"), d => {
+            // Config Global
+            onSnapshot(doc(db, "config", "global"), (d) => {
                 if(d.exists()) {
-                    const c = d.data().colorNeon;
-                    document.getElementById('conf-color').value = c;
-                    document.documentElement.style.setProperty('--neon', c);
+                    const color = d.data().colorNeon;
+                    document.getElementById('color-picker').value = color;
+                    document.documentElement.style.setProperty('--neon', color);
                 }
             });
         }
 
-        // --- ACCIONES CENTRALES ---
-        window.giveXP = async (uid, val) => {
+        // --- FUNCIONES GLOBALES (Ancladas a window) ---
+        window.addXP = async (uid, val) => {
             await updateDoc(doc(db, "usuarios", uid), { puntos: increment(val) });
-            notify(`BALANCE XP ACTUALIZADO: ${val}`);
+            notify("PUNTOS ACTUALIZADOS");
         };
 
         window.toggleV = async (uid, cur) => {
             await updateDoc(doc(db, "usuarios", uid), { verificado: !cur });
-            notify("ESTADO DE VERIFICACIÓN CAMBIADO");
+            notify("ESTADO VERIFICACIÓN CAMBIADO");
         };
 
         window.delUser = async (uid) => {
-            if(confirm("¿ELIMINAR ESTE OPERATIVO DE LA BASE DE DATOS?")) {
+            if(confirm("¿ELIMINAR DEFINITIVAMENTE?")) {
                 await deleteDoc(doc(db, "usuarios", uid));
-                notify("USUARIO BORRADO");
+                notify("USUARIO ELIMINADO");
             }
         };
 
-        window.updateSystemColor = async (color) => {
+        window.updateColor = async (color) => {
             await setDoc(doc(db, "config", "global"), { colorNeon: color }, { merge: true });
-            notify("COLOR DE INTERFAZ SINCRONIZADO");
+            notify("COLOR DE INTERFAZ ACTUALIZADO");
         };
 
         window.sendGlobalMsg = async () => {
-            const txt = document.getElementById('sys-msg').value;
+            const txt = document.getElementById('msg-text').value;
             if(!txt) return;
             await addDoc(collection(db, "chat_global"), {
                 nick: "SYSTEM",
@@ -283,29 +202,24 @@
                 role: "admin",
                 timestamp: serverTimestamp()
             });
-            document.getElementById('sys-msg').value = "";
+            document.getElementById('msg-text').value = "";
             notify("MENSAJE GLOBAL ENVIADO");
         };
 
-        window.deployMission = async () => {
-            const name = document.getElementById('m-name').value;
-            const desc = document.getElementById('m-desc').value;
-            if(!name || !desc) return notify("DATOS INCOMPLETOS");
-            
-            const mId = "M-" + Date.now();
-            await setDoc(doc(db, "torneos", mId), {
-                nombre: name,
-                desc: desc,
-                inscritos_count: 0,
-                jugadores: [],
-                active: true
+        window.createMission = async () => {
+            const n = document.getElementById('m-name').value;
+            const d = document.getElementById('m-desc').value;
+            if(!n || !d) return notify("DATOS INCOMPLETOS");
+            const mid = "M-" + Date.now();
+            await setDoc(doc(db, "torneos", mid), {
+                nombre: n, desc: d, inscritos_count: 0, jugadores: [], active: true
             });
             document.getElementById('m-name').value = "";
             document.getElementById('m-desc').value = "";
-            notify("OPERACIÓN DESPLEGADA");
+            notify("MISIÓN DESPLEGADA");
         };
 
-        window.logout = () => signOut(auth).then(() => location.reload());
+        window.logout = () => signOut(auth).then(() => window.location.reload());
 
     </script>
 </body>
