@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQUAD CORE | Panel de Control Maestro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --bg: #030406; 
+            --card: #0d1117; 
+            --neon: #00f2ff; 
+            --text: #ffffff; 
+            --success: #39FF14; 
+            --error: #ff3e3e; 
+            --gold: #ffcc00; 
+        }
+
+        * { box-sizing: border-box; }
+        body { 
+            margin: 0; background: var(--bg); color: var(--text); 
+            font-family: 'Rajdhani', sans-serif; display: flex; 
+            height: 100vh; overflow: hidden; 
+        }
+
+        /* --- MENÚ LATERAL --- */
+        aside { 
+            width: 260px; background: #000; border-right: 1px solid #1f2937; 
+            display: flex; flex-direction: column; padding: 25px; 
+        }
+        .logo-admin { 
+            font-family: 'Orbitron'; font-size: 1.2rem; margin-bottom: 40px; 
+            color: var(--neon); text-shadow: 0 0 10px var(--neon); 
+        }
+        .side-btn { 
+            padding: 15px; margin-bottom: 12px; background: transparent; 
+            border: 1px solid #1f2937; color: #555; border-radius: 12px; 
+            cursor: pointer; font-family: 'Orbitron'; font-size: 0.65rem; 
+            text-align: left; transition: 0.3s; letter-spacing: 1px;
+        }
+        .side-btn.active { 
+            border-color: var(--neon); color: var(--neon); 
+            background: rgba(0, 242, 255, 0.05); 
+        }
+
+        /* --- CONTENIDO PRINCIPAL --- */
+        main { flex: 1; padding: 40px; overflow-y: auto; background: #050608; }
+        .panel { display: none; animation: fadeIn 0.4s ease; }
+        .panel.active { display: block; }
+
+        h1 { font-family: 'Orbitron'; font-size: 1.5rem; margin-bottom: 30px; }
+
+        /* --- TARJETAS --- */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+        .card { 
+            background: var(--card); border: 1px solid #1f2937; 
+            border-radius: 20px; padding: 25px; 
+        }
+        .card h3 { 
+            margin: 0 0 20px 0; font-family: 'Orbitron'; 
+            font-size: 0.8rem; color: var(--neon); 
+        }
+
+        /* --- FORMULARIOS --- */
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.6rem; font-family: 'Orbitron'; color: #444; margin-bottom: 5px; }
+        input, textarea { 
+            width: 100%; padding: 12px; background: #000; border: 1px solid #222; 
+            color: #fff; border-radius: 8px; font-family: 'Rajdhani'; 
+        }
+        .btn-send { 
+            width: 100%; padding: 15px; background: var(--neon); color: #000; 
+            border: none; border-radius: 10px; font-family: 'Orbitron'; 
+            font-weight: bold; cursor: pointer; 
+        }
+
+        /* --- TABLA DE USUARIOS --- */
+        .table-container { background: var(--card); border-radius: 20px; border: 1px solid #1f2937; overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; }
+        th { 
+            background: #000; padding: 15px; text-align: left; 
+            font-family: 'Orbitron'; font-size: 0.6rem; color: var(--neon); 
+        }
+        td { padding: 15px; border-bottom: 1px solid #1f2937; vertical-align: middle; }
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .user-img { width: 35px; height: 35px; border-radius: 50%; border: 1px solid var(--neon); }
+        
+        /* --- CONTROLES DE PUNTOS --- */
+        .pts-badge { 
+            background: var(--success); color: #000; padding: 4px 8px; 
+            border-radius: 6px; font-weight: bold; font-family: 'Orbitron'; font-size: 0.8rem;
+        }
+        .btn-pts { 
+            padding: 5px 10px; border: 1px solid #222; background: transparent; 
+            color: #fff; border-radius: 5px; cursor: pointer; margin-right: 5px; 
+        }
+        .btn-pts:hover { border-color: var(--neon); }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <aside>
+        <div class="logo-admin">CORE ADMIN</div>
+        <button class="side-btn active" onclick="showPanel('pan-misiones', this)">GESTIÓN MISIONES</button>
+        <button class="side-btn" onclick="showPanel('pan-usuarios', this)">BASE DE OPERATIVOS</button>
+        <button class="side-btn" onclick="showPanel('pan-global', this)">SISTEMA GLOBAL</button>
+    </aside>
+
+    <main>
+        <div id="pan-misiones" class="panel active">
+            <h1>CENTRAL DE OPERACIONES</h1>
+            <div class="grid">
+                <div class="card">
+                    <h3>CREAR MISIÓN NUEVA</h3>
+                    <div class="input-group">
+                        <label>NOMBRE DEL DESAFÍO</label>
+                        <input type="text" id="m-name" placeholder="Ej: Torneo Warzone 2.0">
+                    </div>
+                    <div class="input-group">
+                        <label>DESCRIPCIÓN OPERATIVA</label>
+                        <textarea id="m-desc" rows="3" placeholder="Reglas o detalles..."></textarea>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <div class="input-group" style="flex:1">
+                            <label>CUPOS</label>
+                            <input type="number" id="m-cupo" value="20">
+                        </div>
+                        <div class="input-group" style="flex:1">
+                            <label>PUNTOS RECOMPENSA</label>
+                            <input type="number" id="m-pts" value="100">
+                        </div>
+                    </div>
+                    <button class="btn-send" onclick="crearMision()">PUBLICAR MISIÓN</button>
+                </div>
+
+                <div class="card" style="grid-column: span 2;">
+                    <h3>MISIONES EN CURSO</h3>
+                    <div id="lista-misiones-admin"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="pan-usuarios" class="panel">
+            <h1>REGISTRO DE OPERATIVOS</h1>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>OPERATIVO</th>
+                            <th>WHATSAPP / CONTACTO</th>
+                            <th>PUNTAJE</th>
+                            <th>ACCIONES DE RANGO</th>
+                            <th>ESTADO</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-usuarios-admin"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="pan-global" class="panel">
+            <h1>SISTEMA CENTRAL</h1>
+            <div class="card" style="max-width:450px;">
+                <h3>CONTROL DE IDENTIDAD (COLOR NEÓN)</h3>
+                <input type="color" id="color-picker" style="height:60px; cursor:pointer;" onchange="updateGlobalColor(this.value)">
+                <p style="font-size:0.8rem; color:#444; margin-top:15px; line-height:1.4;">
+                    Al cambiar este color, la interfaz de todos los jugadores se actualizará automáticamente con el nuevo estilo visual del equipo.
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, onSnapshot, updateDoc, deleteDoc, collection, query, orderBy, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // CONFIGURACIÓN FIREBASE (Misma que el cliente)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAyGsnbyvxTEzvtgOXSmU_5Hj6gS6TOWKM",
+            authDomain: "gaming-team-18b95.firebaseapp.com",
+            projectId: "gaming-team-18b95",
+            storageBucket: "gaming-team-18b95.appspot.com",
+            messagingSenderId: "89183017486",
+            appId: "1:89183017486:web:18b6258a2bf5c0bde97a5f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // NAVEGACIÓN
+        window.showPanel = (id, btn) => {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            btn.classList.add('active');
+        };
+
+        // GESTIÓN MISIONES
+        window.crearMision = async () => {
+            const id = "MIS-" + Date.now();
+            const data = {
+                id,
+                nombre: document.getElementById('m-name').value,
+                desc: document.getElementById('m-desc').value,
+                cupo: parseInt(document.getElementById('m-cupo').value),
+                puntos_dar: parseInt(document.getElementById('m-pts').value),
+                estado: 'activo',
+                inscritos_count: 0,
+                jugadores: []
+            };
+            if(!data.nombre) return alert("Escribe el nombre de la misión");
+            await setDoc(doc(db, "torneos", id), data);
+            alert("MISIÓN DESPLEGADA");
+            document.getElementById('m-name').value = "";
+            document.getElementById('m-desc').value = "";
+        };
+
+        onSnapshot(collection(db, "torneos"), snap => {
+            const div = document.getElementById('lista-misiones-admin');
+            div.innerHTML = "";
+            snap.forEach(ds => {
+                const m = ds.data();
+                div.innerHTML += `
+                    <div style="background:#000; padding:15px; border-radius:12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; border-left:4px solid var(--neon);">
+                        <div>
+                            <b style="font-family:'Orbitron'; font-size:0.8rem;">${m.nombre}</b><br>
+                            <small style="color:#444;">${m.inscritos_count} / ${m.cupo} INSCRITOS</small>
+                        </div>
+                        <button onclick="borrarMision('${ds.id}')" style="background:var(--error); border:none; color:#fff; padding:8px 15px; border-radius:8px; cursor:pointer; font-family:'Orbitron'; font-size:0.6rem;">FINALIZAR</button>
+                    </div>`;
+            });
+        });
+
+        window.borrarMision = async (id) => { if(confirm("¿Archivar misión y eliminar del feed?")) await deleteDoc(doc(db, "torneos", id)); };
+
+        // GESTIÓN USUARIOS
+        onSnapshot(query(collection(db, "usuarios"), orderBy("puntos", "desc")), snap => {
+            const tbody = document.getElementById('lista-usuarios-admin');
+            tbody.innerHTML = "";
+            snap.forEach(ds => {
+                const u = ds.data();
+                tbody.innerHTML += `
+                    <tr>
+                        <td>
+                            <div class="user-info">
+                                <img src="${u.avatar}" class="user-img">
+                                <div><b>${u.nick}</b><br><small style="color:#444; font-size:0.7rem;">${u.email}</small></div>
+                            </div>
+                        </td>
+                        <td>
+                            <a href="https://wa.me/${u.whatsapp}" target="_blank" style="color:var(--success); text-decoration:none; font-family:'Orbitron'; font-size:0.7rem;">WA: ${u.whatsapp}</a>
+                        </td>
+                        <td><span class="pts-badge">${u.puntos}</span></td>
+                        <td>
+                            <button class="btn-pts" onclick="darPts('${ds.id}', 10)">+10</button>
+                            <button class="btn-pts" onclick="darPts('${ds.id}', 50)">+50</button>
+                            <button class="btn-pts" onclick="darPts('${ds.id}', -10)" style="color:var(--error)">-10</button>
+                        </td>
+                        <td>
+                            <button onclick="eliminarUser('${ds.id}')" style="background:none; border:none; color:#333; cursor:pointer; font-size:0.7rem;">ELIMINAR</button>
+                        </td>
+                    </tr>`;
+            });
+        });
+
+        window.darPts = async (uid, cant) => { await updateDoc(doc(db, "usuarios", uid), { puntos: increment(cant) }); };
+        window.eliminarUser = async (uid) => { if(confirm("¿Bannear permanentemente a este usuario?")) await deleteDoc(doc(db, "usuarios", uid)); };
+
+        // COLOR GLOBAL
+        window.updateGlobalColor = async (color) => {
+            await setDoc(doc(db, "config", "global"), { colorNeon: color }, { merge: true });
+        };
+    </script>
+</body>
+</html>
