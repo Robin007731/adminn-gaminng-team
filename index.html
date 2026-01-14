@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZONA GAMER | Master Admin Console</title>
+    <title>MASTER CONTROL | Admin Panel</title>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Orbitron:wght@700&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -11,12 +11,11 @@
             --text: #ffffff; --error: #ff3e3e; --success: #39FF14;
         }
 
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; outline: none; }
         body { 
             margin: 0; background: var(--bg); color: var(--text); 
             font-family: 'Rajdhani', sans-serif; 
-            background-image: linear-gradient(to bottom, #050608, #000);
-            min-height: 100vh;
+            background-image: radial-gradient(circle at top right, rgba(0, 242, 255, 0.05), transparent);
         }
 
         header { 
@@ -26,94 +25,107 @@
         }
 
         .container { 
-            max-width: 1200px; margin: 0 auto; padding: 20px;
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; 
+            max-width: 1300px; margin: 0 auto; padding: 20px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; 
         }
 
-        /* --- CARDS --- */
         .card { 
             background: var(--card); border-radius: 15px; border: 1px solid #1f2937;
-            padding: 20px; position: relative;
-        }
-        .card h2 { 
-            font-family: 'Orbitron'; font-size: 0.8rem; margin: 0 0 15px 0; 
-            color: var(--neon); display: flex; align-items: center; gap: 8px;
+            padding: 20px; position: relative; display: flex; flex-direction: column;
         }
 
-        /* --- INPUTS & BTNS --- */
-        input, textarea, select { 
-            width: 100%; padding: 10px; background: #000; border: 1px solid #222; 
-            color: #fff; border-radius: 8px; margin-bottom: 10px; font-family: 'Rajdhani';
+        .card h2 { 
+            font-family: 'Orbitron'; font-size: 0.85rem; margin: 0 0 20px 0; 
+            color: var(--neon); display: flex; align-items: center; gap: 10px;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        /* --- INPUTS & BUTTONS --- */
+        input, textarea { 
+            width: 100%; padding: 12px; background: #000; border: 1px solid #222; 
+            color: #fff; border-radius: 10px; margin-bottom: 12px; font-family: 'Rajdhani';
         }
         
         .btn { 
-            width: 100%; padding: 12px; border: none; border-radius: 8px; 
+            width: 100%; padding: 12px; border: none; border-radius: 10px; 
             font-family: 'Orbitron'; font-size: 0.7rem; font-weight: bold; cursor: pointer;
-            transition: 0.2s;
+            transition: all 0.3s ease; text-transform: uppercase;
         }
-        .btn-neon { background: var(--neon); color: #000; }
-        .btn-danger { background: var(--error); color: #fff; font-size: 0.6rem; width: auto; }
-        .btn-mini { padding: 4px 8px; font-size: 0.6rem; width: auto; border-radius: 4px; }
-
-        /* --- LISTAS --- */
-        .scroll-list { height: 300px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; }
+        .btn-neon { background: var(--neon); color: #000; box-shadow: 0 0 10px rgba(0, 242, 255, 0.2); }
+        .btn-neon:hover { transform: scale(1.02); box-shadow: 0 0 20px var(--neon); }
         
-        .item { 
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 10px; border-bottom: 1px solid #1f2937; font-size: 0.85rem;
+        .btn-danger { background: var(--error); color: #fff; }
+        .btn-mini { padding: 5px 10px; font-size: 0.6rem; width: auto; border-radius: 5px; }
+
+        /* --- LISTS --- */
+        .scroll-list { 
+            height: 350px; overflow-y: auto; background: rgba(0,0,0,0.5); 
+            padding: 10px; border-radius: 10px; border: 1px solid #111;
         }
 
-        /* --- CHAT --- */
-        .msg { margin-bottom: 8px; padding: 5px; border-radius: 5px; }
-        .msg.admin { border-left: 2px solid var(--gold); background: rgba(255, 204, 0, 0.05); }
-        .msg b { color: var(--neon); font-size: 0.7rem; }
+        .item-row { 
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px; border-bottom: 1px solid #1f2937; font-size: 0.9rem;
+        }
+        .item-row:hover { background: rgba(255,255,255,0.02); }
+
+        /* --- CHAT MODERATION --- */
+        .msg { margin-bottom: 10px; padding: 8px; border-radius: 8px; font-size: 0.8rem; background: rgba(255,255,255,0.03); }
+        .msg.admin { border-left: 3px solid var(--gold); background: rgba(255, 204, 0, 0.05); }
+        .msg b { color: var(--neon); }
         .msg.admin b { color: var(--gold); }
 
-        /* --- MISIONES --- */
-        .mision-item { background: #000; margin-bottom: 10px; padding: 10px; border-radius: 8px; border-left: 3px solid var(--success); }
+        /* --- USER MANAGEMENT --- */
+        .u-info b { display: block; font-size: 0.95rem; }
+        .u-info small { color: #555; }
+        .u-badges { display: flex; gap: 5px; margin-top: 4px; }
+        .badge { font-size: 0.6rem; padding: 2px 5px; border-radius: 4px; background: #222; color: #aaa; }
+        .badge.active { background: var(--neon); color: #000; }
 
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--neon); border-radius: 10px; }
     </style>
 </head>
 <body>
 
     <header>
-        <div style="font-family:'Orbitron'; font-size:1.1rem;">ZONA <span style="color:var(--neon)">MASTER</span></div>
-        <button class="btn btn-neon" style="width:auto; padding:5px 15px;" onclick="location.reload()">REFRESCAR</button>
+        <div style="font-family:'Orbitron'; font-size:1.2rem; letter-spacing:2px;">MASTER <span style="color:var(--neon)">SYSTEM</span></div>
+        <div style="display:flex; align-items:center; gap:15px;">
+            <div style="text-align:right;">
+                <div style="font-size:0.6rem; color:#555;">GLOBAL ACCENT</div>
+                <input type="color" id="sys-color" onchange="updateSystemColor(this.value)" style="border:none; background:none; cursor:pointer; width:30px; height:20px;">
+            </div>
+            <button class="btn btn-neon" style="width:auto; padding:8px 15px;" onclick="location.reload()">REFRESH</button>
+        </div>
     </header>
 
     <div class="container">
         
         <div class="card">
-            <h2>📢 GESTIÓN DE MISIONES</h2>
-            <input type="text" id="m-nombre" placeholder="Nombre de la Misión">
-            <textarea id="m-desc" placeholder="Descripción y Premios..." rows="2"></textarea>
-            <button class="btn btn-neon" onclick="crearMision()">PUBLICAR AHORA</button>
-            <hr style="border:0; border-top:1px solid #222; margin:15px 0;">
-            <div id="lista-misiones" class="scroll-list"></div>
+            <h2>🚀 LANZAMIENTO DE MISIONES</h2>
+            <input type="text" id="m-titulo" placeholder="Nombre de la operación...">
+            <textarea id="m-desc" placeholder="Objetivos y recompensas..." rows="3"></textarea>
+            <button class="btn btn-neon" onclick="postMision()">PUBLICAR EN EL FEED</button>
+            <div id="m-active-list" class="scroll-list" style="margin-top:20px; height: 200px;"></div>
         </div>
 
         <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h2 style="margin:0;">💬 CHAT MODERACIÓN</h2>
-                <button class="btn-danger" onclick="limpiarChat()">VACIAR</button>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2 style="margin:0;">💬 MONITOR DE CHAT</h2>
+                <button class="btn btn-danger btn-mini" onclick="nukeChat()">LIMPIAR HISTORIAL</button>
             </div>
-            <div id="chat-box" class="scroll-list"></div>
-            <div style="display:flex; gap:5px; margin-top:10px;">
-                <input type="text" id="admin-msg" placeholder="Habla como Admin..." style="margin:0;">
-                <button class="btn btn-neon" onclick="enviarAdminMsg()" style="width: auto;">ENVIAR</button>
+            <div id="admin-chat-box" class="scroll-list"></div>
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <input type="text" id="admin-reply" placeholder="Anuncio oficial..." style="margin:0;">
+                <button class="btn btn-neon" onclick="sendAdminMsg()" style="width: auto; padding: 0 20px;">ENVIAR</button>
             </div>
         </div>
 
-        <div class="card">
-            <h2>👥 CONTROL DE OPERATIVOS</h2>
-            <div id="lista-usuarios" class="scroll-list" style="height: 450px;"></div>
-        </div>
-
-        <div class="card" style="border-color: var(--gold);">
-            <h2 style="color:var(--gold);">⚡ NÚCLEO DEL SISTEMA</h2>
-            <label style="font-size:0.7rem;">COLOR GLOBAL NEÓN</label>
-            <input type="color" id="color-neon" onchange="cambiarColor(this.value)" style="height:40px;">
-            <p style="font-size:0.7rem; color:#444;">Cambiar este color afecta a todos los usuarios conectados.</p>
+        <div class="card" style="grid-row: span 2;">
+            <h2>👥 BASE DE DATOS DE OPERATIVOS</h2>
+            <div id="user-master-list" class="scroll-list" style="height: 700px;"></div>
         </div>
 
     </div>
@@ -134,38 +146,42 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- FUNCIONES DE MISIONES ---
-        window.crearMision = async () => {
-            const nombre = document.getElementById('m-nombre').value;
-            const desc = document.getElementById('m-desc').value;
-            if(!nombre) return alert("Nombre obligatorio");
-            await setDoc(doc(db, "torneos", "TOR-" + Date.now()), {
-                nombre, desc, estado: 'activo', inscritos_count: 0, jugadores: []
+        // --- SISTEMA ---
+        window.updateSystemColor = async (c) => {
+            await setDoc(doc(db, "config", "global"), { colorNeon: c }, { merge: true });
+        };
+
+        // --- MISIONES ---
+        window.postMision = async () => {
+            const t = document.getElementById('m-titulo').value;
+            const d = document.getElementById('m-desc').value;
+            if(!t) return alert("Ingresa un título");
+            await setDoc(doc(db, "torneos", "MISION-" + Date.now()), {
+                nombre: t, desc: d, estado: 'activo', inscritos_count: 0, jugadores: []
             });
-            document.getElementById('m-nombre').value = ""; document.getElementById('m-desc').value = "";
+            document.getElementById('m-titulo').value = "";
+            document.getElementById('m-desc').value = "";
         };
 
         onSnapshot(collection(db, "torneos"), snap => {
-            const list = document.getElementById('lista-misiones'); list.innerHTML = "";
+            const container = document.getElementById('m-active-list');
+            container.innerHTML = "";
             snap.forEach(d => {
-                const t = d.data();
-                list.innerHTML += `
-                    <div class="mision-item">
-                        <div style="font-size:0.8rem; font-weight:bold;">${t.nombre}</div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">
-                            <small>${t.inscritos_count} inscritos</small>
-                            <button class="btn-danger btn-mini" onclick="borrarMision('${d.id}')">ELIMINAR</button>
-                        </div>
+                const m = d.data();
+                container.innerHTML += `
+                    <div class="item-row">
+                        <span>${m.nombre}</span>
+                        <button class="btn btn-danger btn-mini" onclick="deleteMision('${d.id}')">BORRAR</button>
                     </div>`;
             });
         });
+        window.deleteMision = async (id) => { if(confirm("¿Eliminar misión?")) await deleteDoc(doc(db, "torneos", id)); };
 
-        window.borrarMision = async (id) => { if(confirm("¿Borrar misión?")) await deleteDoc(doc(db, "torneos", id)); };
-
-        // --- FUNCIONES DE CHAT ---
+        // --- CHAT ---
         const qChat = query(collection(db, "chat_global"), orderBy("timestamp", "desc"), limit(50));
         onSnapshot(qChat, snap => {
-            const box = document.getElementById('chat-box'); box.innerHTML = "";
+            const box = document.getElementById('admin-chat-box');
+            box.innerHTML = "";
             let msgs = []; snap.forEach(d => msgs.unshift(d.data()));
             msgs.forEach(m => {
                 const isAdmin = m.role === 'admin';
@@ -174,46 +190,56 @@
             box.scrollTop = box.scrollHeight;
         });
 
-        window.enviarAdminMsg = async () => {
-            const input = document.getElementById('admin-msg');
+        window.sendAdminMsg = async () => {
+            const input = document.getElementById('admin-reply');
             if(!input.value) return;
-            await addDoc(collection(db, "chat_global"), { nick: "MASTER ADMIN", text: input.value, role: 'admin', timestamp: serverTimestamp() });
+            await addDoc(collection(db, "chat_global"), {
+                nick: "SYSTEM ADMIN", text: input.value, role: 'admin', timestamp: serverTimestamp()
+            });
             input.value = "";
         };
 
-        window.limpiarChat = async () => {
-            if(!confirm("¿Borrar todo el chat?")) return;
-            const snap = await getDocs(collection(db, "chat_global"));
-            snap.forEach(async (d) => await deleteDoc(doc(db, "chat_global", d.id)));
+        window.nukeChat = async () => {
+            if(confirm("¿BORRAR TODO EL HISTORIAL DE CHAT? Esta acción no se puede deshacer.")){
+                const snap = await getDocs(collection(db, "chat_global"));
+                snap.forEach(async (d) => await deleteDoc(doc(db, "chat_global", d.id)));
+            }
         };
 
-        // --- FUNCIONES DE USUARIOS ---
+        // --- USUARIOS ---
         onSnapshot(collection(db, "usuarios"), snap => {
-            const list = document.getElementById('lista-usuarios'); list.innerHTML = "";
+            const list = document.getElementById('user-master-list');
+            list.innerHTML = "";
             snap.forEach(d => {
                 const u = d.data();
                 list.innerHTML += `
-                    <div class="item">
-                        <div style="flex:1;">
-                            <div style="font-weight:bold;">${u.nick} ${u.verificado?'✔️':''}</div>
-                            <div style="font-size:0.7rem; color:var(--success);">${u.puntos} PTS | ${u.whatsapp || 'No WA'}</div>
+                    <div class="item-row" style="flex-direction: column; align-items: flex-start; gap: 10px;">
+                        <div style="display:flex; justify-content:space-between; width:100%;">
+                            <div class="u-info">
+                                <b>${u.nick} ${u.verificado?'✔️':''}</b>
+                                <small>${u.email}</small>
+                                <div class="u-badges">
+                                    <div class="badge ${u.admin?'active':''}">ADMIN</div>
+                                    <div class="badge">${u.puntos} PTS</div>
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:5px;">
+                                <button class="btn btn-neon btn-mini" onclick="rewardUser('${d.id}')">+10</button>
+                                <button class="btn btn-danger btn-mini" onclick="banUser('${d.id}')">BAN</button>
+                            </div>
                         </div>
-                        <div style="display:flex; gap:4px; flex-wrap:wrap; justify-content:flex-end; width:120px;">
-                            <button class="btn btn-neon btn-mini" onclick="ajustarPts('${d.id}', 10)">+10</button>
-                            <button class="btn btn-neon btn-mini" style="background:var(--gold)" onclick="toggleKey('${d.id}', 'verificado', ${!u.verificado})">VERIF</button>
-                            <button class="btn btn-neon btn-mini" style="background:#444" onclick="toggleKey('${d.id}', 'admin', ${!u.admin})">${u.admin?'User':'Admin'}</button>
-                            <button class="btn btn-danger btn-mini" onclick="borrarUser('${d.id}')">BAN</button>
+                        <div style="display:flex; gap:5px; width:100%;">
+                            <button class="btn btn-mini" style="background:#222; flex:1;" onclick="toggleStatus('${d.id}', 'verificado', ${!u.verificado})">${u.verificado?'QUITAR VERIF.':'VERIFICAR'}</button>
+                            <button class="btn btn-mini" style="background:#222; flex:1;" onclick="toggleStatus('${d.id}', 'admin', ${!u.admin})">${u.admin?'QUITAR ADMIN':'DAR ADMIN'}</button>
                         </div>
                     </div>`;
             });
         });
 
-        window.ajustarPts = async (id, val) => await updateDoc(doc(db, "usuarios", id), { puntos: increment(val) });
-        window.toggleKey = async (id, key, val) => { let obj = {}; obj[key] = val; await updateDoc(doc(db, "usuarios", id), obj); };
-        window.borrarUser = async (id) => { if(confirm("¿Banear permanentemente a este usuario?")) await deleteDoc(doc(db, "usuarios", id)); };
+        window.rewardUser = async (id) => await updateDoc(doc(db, "usuarios", id), { puntos: increment(10) });
+        window.toggleStatus = async (id, field, val) => { let o = {}; o[field] = val; await updateDoc(doc(db, "usuarios", id), o); };
+        window.banUser = async (id) => { if(confirm("¿BANEAR PERMANENTEMENTE?")) await deleteDoc(doc(db, "usuarios", id)); };
 
-        // --- CONFIG ---
-        window.cambiarColor = async (c) => await updateDoc(doc(db, "config", "global"), { colorNeon: c });
     </script>
 </body>
-</html>s
+</html>
