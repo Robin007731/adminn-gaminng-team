@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA DE CONTROL | TOTAL MANAGEMENT</title>
+    <title>SISTEMA DE CONTROL TOTAL | ZONA GAMER</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&family=Fira+Code:wght@400&display=swap" rel="stylesheet">
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -11,76 +12,120 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
     <style>
-        :root { --neon: #00f2ff; --bg: #030508; --card: #0d1117; --error: #ff3131; --gold: #ffd700; --silver: #c0c0c0; --bronze: #cd7f32; }
-        body { margin: 0; background: var(--bg); color: #e0e6ed; font-family: 'Rajdhani', sans-serif; }
+        :root { 
+            --neon: #00f2ff; --bg: #030508; --card: #0d1117; 
+            --error: #ff3131; --gold: #ffd700; --success: #39FF14;
+        }
         
-        header { background: var(--card); padding: 20px; border-bottom: 2px solid var(--neon); display: flex; justify-content: space-between; align-items: center; }
-        .grid { display: grid; grid-template-columns: 350px 1fr 350px; gap: 20px; padding: 20px; }
-        @media (max-width: 1200px) { .grid { grid-template-columns: 1fr; } }
+        * { box-sizing: border-box; }
+        body { 
+            margin: 0; background: var(--bg); color: #e0e6ed; 
+            font-family: 'Rajdhani', sans-serif; overflow-x: hidden;
+        }
 
-        .card { background: var(--card); border: 1px solid #1a1f26; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
-        .title { font-family: 'Orbitron'; font-size: 0.8rem; color: var(--neon); margin-bottom: 15px; border-bottom: 1px solid #1a1f26; padding-bottom: 8px; display: flex; justify-content: space-between; }
+        /* Header Estilo Cyberpunk */
+        header { 
+            background: var(--card); padding: 20px; border-bottom: 2px solid var(--neon); 
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
+        }
 
-        input, textarea, select { width: 100%; padding: 10px; background: #000; border: 1px solid #222; color: #fff; margin-bottom: 10px; font-family: 'Fira Code'; border-radius: 4px; }
-        .btn { width: 100%; padding: 12px; background: var(--neon); border: none; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; border-radius: 4px; transition: 0.3s; color: #000; }
+        /* Layout Grid */
+        .grid-container { 
+            display: grid; grid-template-columns: 350px 1fr 350px; gap: 20px; padding: 20px; 
+        }
+        @media (max-width: 1100px) { .grid-container { grid-template-columns: 1fr; } }
+
+        /* Tarjetas */
+        .card { 
+            background: var(--card); border: 1px solid #1a1f26; padding: 20px; 
+            border-radius: 8px; margin-bottom: 20px; position: relative;
+        }
+        .card-title { 
+            font-family: 'Orbitron'; font-size: 0.8rem; color: var(--neon); 
+            margin-bottom: 20px; border-bottom: 1px solid #222; padding-bottom: 10px;
+            display: flex; justify-content: space-between;
+        }
+
+        /* Inputs y Botones */
+        input, textarea, select { 
+            width: 100%; padding: 12px; background: #000; border: 1px solid #222; 
+            color: #fff; margin-bottom: 15px; font-family: 'Fira Code'; border-radius: 4px;
+        }
+        .btn { 
+            width: 100%; padding: 12px; background: var(--neon); border: none; 
+            font-family: 'Orbitron'; font-weight: bold; cursor: pointer; 
+            border-radius: 4px; transition: 0.3s; color: #000; text-transform: uppercase;
+        }
         .btn:hover { filter: brightness(1.2); box-shadow: 0 0 15px var(--neon); }
-        .btn-win { background: var(--gold); margin-top: 5px; font-size: 0.6rem; }
+        .btn-danger { background: var(--error); color: #fff; font-size: 0.7rem; padding: 5px; }
 
-        .rank-item { display: flex; align-items: center; gap: 15px; padding: 10px; border-bottom: 1px solid #1a1f26; }
-        .pos-1 { border-left: 4px solid var(--gold); background: rgba(255, 215, 0, 0.05); }
-        .badge { font-family: 'Orbitron'; font-size: 1.2rem; width: 30px; }
-
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        th { text-align: left; color: #444; padding: 10px; border-bottom: 1px solid #222; font-family: 'Orbitron'; font-size: 0.6rem; }
-        td { padding: 12px 10px; border-bottom: 1px solid #05070a; }
+        /* Tabla de Usuarios */
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th { text-align: left; color: #444; font-family: 'Orbitron'; font-size: 0.6rem; padding: 10px; }
+        td { padding: 12px 10px; border-bottom: 1px solid #0a0e14; }
         
-        .winner-list { list-style: none; padding: 0; }
-        .winner-list li { padding: 8px; background: #1a1f26; margin-bottom: 5px; border-radius: 4px; border-right: 3px solid var(--gold); font-size: 0.8rem; }
+        .xp-badge { color: var(--success); font-weight: bold; font-family: 'Fira Code'; }
+        
+        /* Ranking */
+        .rank-row { 
+            display: flex; align-items: center; padding: 10px; 
+            background: rgba(255,255,255,0.02); margin-bottom: 10px; border-radius: 5px;
+        }
+        .rank-pos { font-family: 'Orbitron'; font-size: 1.2rem; margin-right: 15px; min-width: 30px; }
+        
+        .winner-item { 
+            padding: 8px; border-left: 3px solid var(--gold); 
+            background: #1a1f26; margin-bottom: 8px; font-size: 0.8rem;
+        }
     </style>
 </head>
 <body>
 
     <header>
-        <div style="font-family:'Orbitron';">SISTEMA_<span style="color:var(--neon)">MASTER</span>_ADMIN</div>
-        <div style="font-size: 0.7rem; font-family: 'Fira Code'; color: var(--neon);">MODO: CONTROL TOTAL ACTIVO</div>
+        <div style="font-family:'Orbitron'; letter-spacing:3px;">SYSTEM_<span style="color:var(--neon)">OVERRIDE</span>_v4</div>
+        <div style="font-size: 0.7rem; color: var(--neon); font-family: 'Fira Code';">ACCESS_LEVEL: MASTER_ADMIN</div>
     </header>
 
-    <div class="grid">
+    <div class="grid-container">
+        
         <aside>
             <div class="card">
-                <div class="title">NUEVA OPERACIÓN</div>
-                <input type="text" id="m-name" placeholder="Nombre de Misión">
-                <input type="number" id="m-cap" placeholder="Capacidad Jugadores">
-                <textarea id="m-desc" placeholder="Reglas y premios..."></textarea>
-                <button class="btn" onclick="createMission()">DESPLEGAR</button>
+                <div class="card-title">DESPLEGAR TORNEO</div>
+                <input type="text" id="m-name" placeholder="Nombre del Evento">
+                <input type="number" id="m-cap" placeholder="Capacidad (ej. 32)">
+                <textarea id="m-desc" rows="3" placeholder="Reglas y premios..."></textarea>
+                <button class="btn" onclick="crearTorneo()">PUBLICAR EVENTO</button>
             </div>
 
             <div class="card">
-                <div class="title">BROADCAST GLOBAL</div>
-                <textarea id="sys-msg" placeholder="Escribir mensaje de sistema..."></textarea>
-                <button class="btn" onclick="sendMsg()">ENVIAR A TODOS</button>
+                <div class="card-title">BROADCAST SYSTEM</div>
+                <textarea id="sys-msg" rows="2" placeholder="Mensaje para el chat global..."></textarea>
+                <button class="btn" onclick="enviarMensaje()">ENVIAR A TODOS</button>
             </div>
 
             <div class="card">
-                <div class="title">ÚLTIMOS GANADORES</div>
-                <ul id="winners-log" class="winner-list"></ul>
+                <div class="card-title">LOG DE GANADORES</div>
+                <div id="winners-list">
+                    </div>
             </div>
         </aside>
 
         <main>
             <div class="card">
-                <div class="title">DATABASE_OPERATIVOS (<span id="total-users">0</span>)</div>
+                <div class="card-title">DATABASE_OPERATIVOS [<span id="user-count">0</span>]</div>
                 <div style="overflow-x: auto;">
                     <table>
                         <thead>
                             <tr>
-                                <th>NICKNAME</th>
+                                <th>JUGADOR</th>
                                 <th>PUNTOS XP</th>
-                                <th>GESTIÓN XP</th>
-                                <th>BORRAR</th>
+                                <th>MODIFICAR</th>
+                                <th>ELIMINAR</th>
                             </tr>
                         </thead>
-                        <tbody id="user-table"></tbody>
+                        <tbody id="user-table">
+                            </tbody>
                     </table>
                 </div>
             </div>
@@ -88,19 +133,25 @@
 
         <aside>
             <div class="card">
-                <div class="title">TOP 3 RANKING</div>
-                <div id="top-ranking"></div>
+                <div class="card-title">TOP 3 RANKING</div>
+                <div id="ranking-container">
+                    </div>
             </div>
 
             <div class="card">
-                <div class="title">SALÓN DE LA FAMA</div>
-                <select id="user-select-win"></select>
-                <button class="btn btn-win" onclick="recordWinner()">MARCAR GANADOR</button>
+                <div class="card-title">CORONAR GANADOR</div>
+                <p style="font-size: 0.7rem; color: #666; margin-bottom: 10px;">Selecciona al operativo que ganó el último evento:</p>
+                <select id="win-selector">
+                    <option value="">Cargando operativos...</option>
+                </select>
+                <button class="btn" style="background:var(--gold)" onclick="registrarGanador()">REGISTRAR VICTORIA</button>
             </div>
         </aside>
+
     </div>
 
     <script>
+        // --- CONFIGURACIÓN FIREBASE ---
         const firebaseConfig = {
             apiKey: "AIzaSyAyGsnbyvxTEzvtgOXSmU_5Hj6gS6TOWKM",
             authDomain: "gaming-team-18b95.firebaseapp.com",
@@ -113,109 +164,128 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        function initAdmin() {
-            // Usuarios en Tiempo Real
+        // --- CARGA INICIAL Y REAL-TIME ---
+        function sincronizarDatos() {
+            // Escuchar Usuarios (Ordenados por puntos)
             db.collection("usuarios").orderBy("puntos", "desc").onSnapshot(snap => {
                 const table = document.getElementById('user-table');
-                const topDiv = document.getElementById('top-ranking');
-                const selector = document.getElementById('user-select-win');
+                const ranking = document.getElementById('ranking-container');
+                const selector = document.getElementById('win-selector');
                 
-                document.getElementById('total-users').innerText = snap.size;
+                document.getElementById('user-count').innerText = snap.size;
+                
                 table.innerHTML = "";
-                topDiv.innerHTML = "";
-                selector.innerHTML = '<option value="">Elegir Jugador...</option>';
+                ranking.innerHTML = "";
+                selector.innerHTML = '<option value="">Seleccionar Jugador...</option>';
 
-                let count = 1;
+                let i = 1;
                 snap.forEach(doc => {
                     const u = doc.data();
-                    const userId = doc.id; // Guardamos el ID del documento
-                    
+                    const id = doc.id;
+
+                    // 1. Llenar Tabla Principal
                     table.innerHTML += `
                         <tr>
-                            <td><b>${u.nick}</b></td>
-                            <td style="color:var(--neon); font-weight:bold;">${u.puntos || 0} XP</td>
+                            <td><b>${u.nick}</b><br><small style="color:#444">${u.whatsapp || 'No data'}</small></td>
+                            <td class="xp-badge">${u.puntos || 0} XP</td>
                             <td>
-                                <button class="btn" style="width:auto; padding:5px 10px;" onclick="modifyXP('${userId}', 50)">+50</button>
-                                <button class="btn" style="width:auto; padding:5px 10px; background:#222; color:#fff;" onclick="modifyXP('${userId}', -50)">-50</button>
+                                <button onclick="modXP('${id}', 100)" style="cursor:pointer; background:#222; color:white; border:none; padding:5px;">+100</button>
+                                <button onclick="modXP('${id}', -100)" style="cursor:pointer; background:#222; color:white; border:none; padding:5px;">-100</button>
                             </td>
                             <td>
-                                <button class="btn" style="width:auto; padding:5px 10px; background:var(--error); color:#fff;" onclick="deleteUser('${userId}')">ELIMINAR</button>
+                                <button class="btn btn-danger" onclick="eliminarOperativo('${id}')">BORRAR</button>
                             </td>
                         </tr>
                     `;
 
-                    if(count <= 3) {
-                        topDiv.innerHTML += `
-                            <div class="rank-item pos-${count}">
-                                <div class="badge">${count === 1 ? '🥇' : count === 2 ? '🥈' : '🥉'}</div>
-                                <div><b>${u.nick}</b><br><small>${u.puntos} XP</small></div>
+                    // 2. Llenar Ranking Top 3
+                    if(i <= 3) {
+                        const medal = i === 1 ? '🥇' : i === 2 ? '🥈' : '🥉';
+                        ranking.innerHTML += `
+                            <div class="rank-row">
+                                <div class="rank-pos">${medal}</div>
+                                <div><b>${u.nick}</b><br><small style="color:var(--neon)">${u.puntos} XP</small></div>
                             </div>
                         `;
                     }
+
+                    // 3. Llenar Selector
                     selector.innerHTML += `<option value="${u.nick}">${u.nick}</option>`;
-                    count++;
+                    i++;
                 });
             });
 
-            // Ganadores
-            db.collection("ganadores").orderBy("fecha", "desc").limit(5).onSnapshot(snap => {
-                const log = document.getElementById('winners-log');
-                log.innerHTML = "";
+            // Escuchar Ganadores
+            db.collection("ganadores").orderBy("fecha", "desc").limit(8).onSnapshot(snap => {
+                const list = document.getElementById('winners-list');
+                list.innerHTML = "";
                 snap.forEach(doc => {
-                    log.innerHTML += `<li>${doc.data().nick}</li>`;
+                    list.innerHTML += `<div class="winner-item">🏆 ${doc.data().nick}</div>`;
                 });
             });
         }
 
-        // --- FUNCIONES CLAVE ---
-        
-        // ELIMINAR USUARIO (ESTA ES LA QUE NECESITABAS)
-        window.deleteUser = function(id) {
-            if(confirm("¿Deseas eliminar permanentemente a este jugador?")) {
+        // --- FUNCIONES DE ACCIÓN ---
+
+        // ELIMINAR (ESTRICTO)
+        window.eliminarOperativo = function(id) {
+            if(confirm("¿ELIMINAR ESTE PERFIL DEFINITIVAMENTE? No hay vuelta atrás.")) {
                 db.collection("usuarios").doc(id).delete()
-                .then(() => {
-                    console.log("Usuario eliminado: " + id);
-                })
-                .catch((error) => {
-                    console.error("Error al eliminar: ", error);
-                    alert("Error al eliminar el usuario");
-                });
+                .then(() => console.log("Eliminado con éxito"))
+                .catch(err => alert("Error al borrar: " + err.message));
             }
         };
 
-        window.modifyXP = (id, amt) => {
-            db.collection("usuarios").doc(id).update({ 
-                puntos: firebase.firestore.FieldValue.increment(amt) 
+        window.modXP = (id, val) => {
+            db.collection("usuarios").doc(id).update({
+                puntos: firebase.firestore.FieldValue.increment(val)
             });
         };
 
-        window.createMission = () => {
+        window.crearTorneo = () => {
             const n = document.getElementById('m-name').value;
             const c = document.getElementById('m-cap').value;
             const d = document.getElementById('m-desc').value;
-            if(!n) return;
+            if(!n || !c) return alert("Ingresa nombre y capacidad");
+            
             db.collection("torneos").add({
-                nombre: n, capacidad: parseInt(c), desc: d, active: true, jugadores: [], inscritos_count: 0
+                nombre: n,
+                capacidad: parseInt(c),
+                desc: d,
+                active: true,
+                jugadores: [],
+                inscritos_count: 0,
+                fecha: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                alert("Torneo desplegado");
+                document.getElementById('m-name').value = "";
+                document.getElementById('m-cap').value = "";
+                document.getElementById('m-desc').value = "";
             });
-            alert("Misión publicada");
         };
 
-        window.recordWinner = () => {
-            const nick = document.getElementById('user-select-win').value;
-            if(!nick) return;
-            db.collection("ganadores").add({ nick: nick, fecha: firebase.firestore.FieldValue.serverTimestamp() });
-        };
-
-        window.sendMsg = () => {
+        window.enviarMensaje = () => {
             const txt = document.getElementById('sys-msg').value;
             if(!txt) return;
             db.collection("chat_global").add({
-                nick: "SYSTEM", text: txt.toUpperCase(), role: "admin", timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            document.getElementById('sys-msg').value = "";
+                nick: "SYSTEM",
+                text: txt.toUpperCase(),
+                role: "admin",
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => document.getElementById('sys-msg').value = "");
         };
 
-        initAdmin();
+        window.registrarGanador = () => {
+            const n = document.getElementById('win-selector').value;
+            if(!n) return alert("Selecciona un nombre");
+            db.collection("ganadores").add({
+                nick: n,
+                fecha: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => alert("Victoria registrada"));
+        };
+
+        // Iniciar todo
+        sincronizarDatos();
     </script>
 </body>
 </html>
