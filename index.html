@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZONA GAMER | CONTROL TOTAL</title>
+    <title>SISTEMA DE CONTROL | ACCESO TOTAL</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -11,81 +11,77 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
     <style>
-        :root { --neon: #00f2ff; --bg: #020406; --card: #0a0e14; --error: #ff3131; }
+        :root { --neon: #00f2ff; --bg: #020406; --card: #0a0e14; --error: #ff3131; --success: #39FF14; }
         body { margin: 0; background: var(--bg); color: #e0e6ed; font-family: 'Rajdhani', sans-serif; }
         
-        /* Pantalla de Carga */
-        #loader { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .spin { width: 50px; height: 50px; border: 3px solid #111; border-top: 3px solid var(--neon); border-radius: 50%; animation: s 1s linear infinite; }
-        @keyframes s { to { transform: rotate(360deg); } }
-
-        /* Dashboard */
         header { background: var(--card); padding: 15px 30px; border-bottom: 2px solid var(--neon); display: flex; justify-content: space-between; align-items: center; }
-        .main { max-width: 1200px; margin: 20px auto; padding: 0 20px; display: grid; grid-template-columns: 320px 1fr; gap: 20px; }
-        @media (max-width: 900px) { .main { grid-template-columns: 1fr; } }
+        .container { max-width: 1200px; margin: 20px auto; padding: 0 20px; display: grid; grid-template-columns: 320px 1fr; gap: 20px; }
+        @media (max-width: 900px) { .container { grid-template-columns: 1fr; } }
 
-        .card { background: var(--card); border: 1px solid #1a1f26; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
-        .title { font-family: 'Orbitron'; font-size: 0.7rem; color: var(--neon); margin-bottom: 15px; border-bottom: 1px solid #1a1f26; padding-bottom: 5px; }
+        .card { background: var(--card); border: 1px solid #1a1f26; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .title { font-family: 'Orbitron'; font-size: 0.75rem; color: var(--neon); margin-bottom: 15px; border-bottom: 1px solid #1a1f26; padding-bottom: 8px; letter-spacing: 1px; }
 
-        input, textarea { width: 100%; padding: 10px; background: #000; border: 1px solid #222; color: #fff; margin-bottom: 10px; border-radius: 4px; }
-        .btn { width: 100%; padding: 12px; background: var(--neon); border: none; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        input, textarea { width: 100%; padding: 12px; background: #000; border: 1px solid #222; color: #fff; margin-bottom: 12px; border-radius: 4px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 12px; background: var(--neon); border: none; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; border-radius: 4px; transition: 0.3s; color: #000; }
+        .btn:hover { background: #fff; box-shadow: 0 0 15px var(--neon); }
         
         table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; font-size: 0.6rem; color: #555; text-transform: uppercase; padding: 10px; border-bottom: 1px solid #1a1f26; }
-        td { padding: 12px 10px; border-bottom: 1px solid #05070a; font-size: 0.9rem; }
-        .act { background: #111; border: 1px solid #333; color: #fff; padding: 5px 8px; cursor: pointer; border-radius: 3px; font-size: 0.7rem; }
-        .act:hover { border-color: var(--neon); }
+        th { text-align: left; font-size: 0.65rem; color: #555; text-transform: uppercase; padding: 10px; border-bottom: 1px solid #1a1f26; font-family: 'Orbitron'; }
+        td { padding: 15px 10px; border-bottom: 1px solid #05070a; font-size: 0.9rem; }
+        
+        .act { background: #111; border: 1px solid #333; color: #fff; padding: 6px 10px; cursor: pointer; border-radius: 3px; font-size: 0.7rem; margin-right: 5px; }
+        .act:hover { border-color: var(--neon); color: var(--neon); }
+
+        #status-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--neon); color: #000; font-size: 0.7rem; padding: 3px 15px; font-weight: bold; font-family: 'Orbitron'; }
     </style>
 </head>
 <body>
 
-    <div id="loader">
-        <div class="spin"></div>
-        <p id="load-status" style="margin-top:20px; font-family:'Orbitron'; font-size:0.7rem;">SINCRONIZANDO...</p>
-        <button id="btn-cancel" onclick="location.href='index.html'" style="display:none; margin-top:20px; background:none; color:#444; border:1px solid #222; cursor:pointer;">CANCELAR</button>
-    </div>
-
     <header>
-        <div style="font-family:'Orbitron'; letter-spacing:2px;">MASTER_<span style="color:var(--neon)">ADMIN</span></div>
-        <button onclick="logout()" class="act" style="color:var(--error); border-color:var(--error)">CERRAR SESIÓN</button>
+        <div style="font-family:'Orbitron'; letter-spacing:2px; font-size: 1.2rem;">SISTEMA_<span style="color:var(--neon)">RAID</span>_CONTROL</div>
+        <div id="connection-status">● CONECTADO</div>
     </header>
 
-    <div class="main">
+    <div class="container">
         <aside>
             <div class="card">
-                <div class="title">MENSAJE GLOBAL</div>
-                <textarea id="sys-msg" rows="3" placeholder="Escribir a todos los usuarios..."></textarea>
-                <button class="btn" onclick="sendMsg()">ENVIAR BROADCAST</button>
+                <div class="title">BROADCAST_GLOBAL</div>
+                <textarea id="sys-msg" rows="3" placeholder="Mensaje para todos los operativos..."></textarea>
+                <button class="btn" onclick="sendMsg()">ENVIAR MENSAJE</button>
             </div>
+
             <div class="card">
-                <div class="title">NUEVA MISIÓN</div>
-                <input type="text" id="m-name" placeholder="Nombre de la misión">
-                <textarea id="m-desc" placeholder="Reglas/Premios"></textarea>
-                <button class="btn" onclick="createMission()">PUBLICAR</button>
+                <div class="title">NUEVA_MISIÓN</div>
+                <input type="text" id="m-name" placeholder="Título del torneo">
+                <textarea id="m-desc" placeholder="Reglas y Recompensas"></textarea>
+                <button class="btn" onclick="createMission()">DESPLEGAR</button>
             </div>
         </aside>
 
         <main>
             <div class="card">
-                <div class="title">OPERATIVOS ACTIVOS (<span id="total-users">0</span>)</div>
+                <div class="title">OPERATIVOS_EN_RED (<span id="total-users">0</span>)</div>
                 <div style="overflow-x: auto;">
                     <table>
                         <thead>
                             <tr>
-                                <th>NICKNAME</th>
+                                <th>OPERATIVO</th>
                                 <th>PUNTOS XP</th>
-                                <th>ACCIONES</th>
+                                <th>CONTROL</th>
                             </tr>
                         </thead>
-                        <tbody id="user-table"></tbody>
+                        <tbody id="user-table">
+                            </tbody>
                     </table>
                 </div>
             </div>
         </main>
     </div>
 
+    <div id="status-bar">MODO_CONTROL_DIRECTO: ACTIVO</div>
+
     <script>
-        // --- CONFIGURACIÓN ---
+        // --- CONFIGURACIÓN DE TU FIREBASE ---
         const firebaseConfig = {
             apiKey: "AIzaSyAyGsnbyvxTEzvtgOXSmU_5Hj6gS6TOWKM",
             authDomain: "gaming-team-18b95.firebaseapp.com",
@@ -95,59 +91,37 @@
             appId: "1:89183017486:web:18b6258a2bf5c0bde97a5f"
         };
 
-        // Inicializar
+        // Iniciar Firebase
         firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
         const db = firebase.firestore();
 
-        const statusText = document.getElementById('load-status');
-
-        // Mostrar botón de cancelar si tarda mucho
-        setTimeout(() => document.getElementById('btn-cancel').style.display = 'block', 4000);
-
-        // --- LÓGICA DE ACCESO ---
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                statusText.innerText = "COMPROBANDO RANGO...";
-                db.collection("usuarios").doc(user.uid).get()
-                .then(doc => {
-                    if (doc.exists && doc.data().admin === true) {
-                        document.getElementById('loader').style.display = 'none';
-                        initDashboard();
-                    } else {
-                        statusText.style.color = "red";
-                        statusText.innerText = "ERROR: NO TIENES PERMISOS DE ADMIN";
-                    }
-                })
-                .catch(err => {
-                    statusText.innerText = "ERROR DE LECTURA: " + err.message;
-                });
-            } else {
-                window.location.href = 'index.html';
-            }
-        });
-
-        // --- DASHBOARD ---
-        function initDashboard() {
-            // Escuchar usuarios en tiempo real
+        // --- CARGAR USUARIOS AL INICIAR ---
+        function initAdmin() {
             db.collection("usuarios").onSnapshot(snap => {
                 const table = document.getElementById('user-table');
                 document.getElementById('total-users').innerText = snap.size;
                 table.innerHTML = "";
+                
                 snap.forEach(doc => {
                     const u = doc.data();
                     table.innerHTML += `
                         <tr>
-                            <td><b>${u.nick}</b><br><small style="color:#444">${doc.id}</small></td>
-                            <td style="color:var(--neon); font-weight:bold;">${u.puntos || 0} XP</td>
+                            <td>
+                                <div style="font-weight:700; color:#fff;">${u.nick}</div>
+                                <div style="font-size:0.6rem; color:#444;">ID: ${doc.id}</div>
+                            </td>
+                            <td style="color:var(--neon); font-family:'Orbitron'; font-weight:bold;">${u.puntos || 0} XP</td>
                             <td>
                                 <button class="act" onclick="modifyXP('${doc.id}', 100)">+100</button>
                                 <button class="act" onclick="modifyXP('${doc.id}', -100)">-100</button>
-                                <button class="act" onclick="deleteUser('${doc.id}')" style="color:var(--error)">DEL</button>
+                                <button class="act" onclick="deleteUser('${doc.id}')" style="color:var(--error); border-color:#400;">DEL</button>
                             </td>
                         </tr>
                     `;
                 });
+            }, err => {
+                console.error("Error al leer:", err);
+                alert("Error de conexión. Revisa las reglas de Firestore.");
             });
         }
 
@@ -155,11 +129,11 @@
         window.modifyXP = (id, amt) => {
             db.collection("usuarios").doc(id).update({
                 puntos: firebase.firestore.FieldValue.increment(amt)
-            });
+            }).then(() => console.log("XP Actualizado"));
         };
 
         window.deleteUser = (id) => {
-            if(confirm("¿ELIMINAR ESTE USUARIO?")) {
+            if(confirm("¿ELIMINAR ESTE OPERATIVO?")) {
                 db.collection("usuarios").doc(id).delete();
             }
         };
@@ -174,7 +148,7 @@
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
                 document.getElementById('sys-msg').value = "";
-                alert("Broadcast enviado");
+                alert("MENSAJE BROADCAST ENVIADO");
             });
         };
 
@@ -191,11 +165,12 @@
             }).then(() => {
                 document.getElementById('m-name').value = "";
                 document.getElementById('m-desc').value = "";
-                alert("Misión desplegada");
+                alert("MISIÓN DESPLEGADA");
             });
         };
 
-        window.logout = () => auth.signOut();
+        // Ejecutar carga
+        initAdmin();
     </script>
 </body>
 </html>
