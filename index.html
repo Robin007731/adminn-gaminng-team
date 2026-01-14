@@ -3,67 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA ADMIN | RECOVERY</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Fira+Code:wght@400&display=swap" rel="stylesheet">
+    <title>ZONA GAMER | Tactical Command</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Orbitron:wght@700&family=Fira+Code:wght@400&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; background: #030508; color: #e0e6ed; font-family: sans-serif; }
-        #loading-overlay { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .spinner { width: 40px; height: 40px; border: 4px solid #111; border-top-color: #00f2ff; border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        
-        .card { background: #0d1117; border: 1px solid #1a1f26; padding: 20px; border-radius: 8px; margin: 10px; }
-        header { background: #0d1117; padding: 15px; border-bottom: 2px solid #00f2ff; display: flex; justify-content: space-between; align-items:center; }
-        button { cursor: pointer; padding: 10px; font-family: 'Orbitron'; font-size: 0.7rem; border-radius: 4px; border: none; }
-        .btn-neon { background: #00f2ff; color: #000; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { text-align: left; color: #00f2ff; font-size: 0.7rem; padding: 10px; border-bottom: 1px solid #222; }
-        td { padding: 10px; border-bottom: 1px solid #111; font-size: 0.8rem; }
-        .muted { color: #9aa6b2; }
-        .small { font-size: 0.75rem; }
+        :root { 
+            --bg: #030508; --card: #0d1117; --neon: #00f2ff; --text: #e0e6ed; 
+            --success: #39FF14; --gold: #ffcc00; --error: #ff3131;
+        }
+
+        * { box-sizing: border-box; outline: none; }
+        body { 
+            margin: 0; background: var(--bg); color: var(--text); 
+            font-family: 'Rajdhani', sans-serif; 
+        }
+
+        /* --- NOTIFICACIONES --- */
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 10000; }
+        .toast { 
+            background: #000; border: 1px solid var(--neon); color: #fff;
+            padding: 12px 25px; margin-bottom: 10px; font-family: 'Fira Code';
+            font-size: 0.75rem; box-shadow: 0 0 15px rgba(0,242,255,0.2);
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+        /* --- LAYOUT --- */
+        header { 
+            background: var(--card); padding: 20px 40px; border-bottom: 2px solid var(--neon);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 2fr; gap: 30px; }
+
+        @media (max-width: 900px) { .container { grid-template-columns: 1fr; } }
+
+        /* --- CARDS --- */
+        .card { 
+            background: var(--card); border: 1px solid rgba(255,255,255,0.05); 
+            padding: 25px; border-radius: 4px; position: relative;
+        }
+        .card-title { 
+            font-family: 'Orbitron'; font-size: 0.8rem; color: var(--neon); 
+            margin-bottom: 20px; display: flex; align-items: center; gap: 10px;
+            letter-spacing: 1px; border-bottom: 1px solid #1a1f26; padding-bottom: 10px;
+        }
+
+        /* --- FORMS --- */
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.65rem; font-family: 'Orbitron'; margin-bottom: 5px; color: #555; }
+        input, textarea, select { 
+            width: 100%; padding: 12px; background: #000; border: 1px solid #1a1f26; 
+            color: #fff; font-family: 'Fira Code'; font-size: 0.85rem;
+        }
+        input:focus { border-color: var(--neon); }
+
+        .btn { 
+            width: 100%; padding: 14px; border: none; font-family: 'Orbitron'; 
+            font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.75rem;
+            transition: 0.3s;
+        }
+        .btn-neon { background: var(--neon); color: #000; }
+        .btn-neon:hover { box-shadow: 0 0 15px var(--neon); }
+        .btn-ghost { background: transparent; border: 1px solid #1a1f26; color: #555; margin-top: 10px; }
+
+        /* --- TABLES --- */
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-family: 'Fira Code'; font-size: 0.8rem; }
+        th { text-align: left; padding: 12px; color: var(--neon); border-bottom: 1px solid #1a1f26; font-family: 'Orbitron'; font-size: 0.6rem; }
+        td { padding: 12px; border-bottom: 1px solid #0a0e14; }
+        tr:hover { background: rgba(255,255,255,0.02); }
+
+        .badge-points { color: var(--success); font-weight: bold; }
+        .action-btn { 
+            padding: 5px 10px; background: transparent; border: 1px solid #222; 
+            color: #eee; cursor: pointer; font-size: 0.7rem; margin-right: 5px;
+        }
+        .action-btn:hover { border-color: var(--neon); color: var(--neon); }
+
+        /* --- SECTION SWITCHER --- */
+        #auth-check { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
 
-    <div id="loading-overlay">
-        <div class="spinner"></div>
-        <p id="load-msg" style="font-family:'Orbitron'; margin-top:20px;">INICIANDO SESIÓN...</p>
-        <div id="emergency-btns" style="display:none; margin-top:20px;">
-            <button id="back-login" style="background:#333; color:#fff;">VOLVER AL LOGIN</button>
-            <button id="retry" style="background:#00f2ff; color:#000;">REINTENTAR</button>
+    <div id="toast-container"></div>
+
+    <div id="auth-check">
+        <div style="text-align:center">
+            <h2 style="font-family:'Orbitron'; color:var(--neon)">ESTABLISHING_COMMAND_LINK...</h2>
+            <p style="font-family:'Fira Code'; font-size:0.7rem; color:#333;">VERIFYING_ADMIN_CREDENTIALS</p>
         </div>
     </div>
 
     <header>
-        <div style="font-family:'Orbitron'; color:#00f2ff;">CORE_ADMIN</div>
-        <button id="logout-btn" style="background:#ff3131; color:#fff;">LOGOUT</button>
+        <div style="font-family:'Orbitron'; letter-spacing:2px;">
+            <span style="color:var(--neon)">COMMAND</span>_CENTER <small style="font-size:0.5rem; color:#444;">V2.0</small>
+        </div>
+        <button class="action-btn" onclick="logout()" style="border-color:var(--error); color:var(--error)">TERMINATE_SYNC</button>
     </header>
 
-    <div style="max-width: 1000px; margin: 20px auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-        <div class="card">
-            <h3 style="font-family:'Orbitron'; font-size:0.8rem;">ANUNCIO SISTEMA</h3>
-            <textarea id="msg-input" style="width:100%; background:#000; color:#fff; border:1px solid #333; padding:10px;"></textarea>
-            <button id="send-broadcast" class="btn-neon" style="margin-top:10px; width:100%;">ENVIAR A TODOS</button>
-        </div>
+    <div class="container">
         
-        <div class="card">
-            <h3 style="font-family:'Orbitron'; font-size:0.8rem;">ESTADÍSTICAS</h3>
-            <p>Usuarios: <span id="user-count">0</span></p>
+        <div class="sidebar">
+            <div class="card" style="margin-bottom: 30px;">
+                <div class="card-title">⚙️ SYSTEM_CONFIG</div>
+                <div class="form-group">
+                    <label>NEON_HEX_COLOR</label>
+                    <input type="color" id="conf-color" onchange="updateColor(this.value)" style="height:50px; padding:2px;">
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📡 NEW_MISSION</div>
+                <div class="form-group">
+                    <label>MISSION_NAME</label>
+                    <input type="text" id="m-name" placeholder="Ej: Torneo Warzone Elite">
+                </div>
+                <div class="form-group">
+                    <label>OBJECTIVES (DESC)</label>
+                    <textarea id="m-desc" rows="3" placeholder="Detalles de la operación..."></textarea>
+                </div>
+                <button class="btn btn-neon" onclick="createMission()">DEPLOY_MISSION</button>
+            </div>
         </div>
 
-        <div class="card" style="grid-column: 1 / -1;">
-            <h3 style="font-family:'Orbitron'; font-size:0.8rem;">LISTA DE OPERATIVOS</h3>
-            <table>
-                <thead>
-                    <tr><th>NICK</th><th>PUNTOS</th><th>ACCIONES</th></tr>
-                </thead>
-                <tbody id="user-list"></tbody>
-            </table>
+        <div class="main-content">
+            <div class="card">
+                <div class="card-title">👥 OPERATIVE_DATABASE</div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>NICK</th>
+                                <th>XP_POINTS</th>
+                                <th>STATUS</th>
+                                <th>ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="user-table">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
+
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, getDoc, onSnapshot, collection, updateDoc, increment, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, collection, query, orderBy, deleteDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -79,174 +166,102 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // Referencias DOM
-        const overlay = document.getElementById('loading-overlay');
-        const loadMsg = document.getElementById('load-msg');
-        const emergencyBtns = document.getElementById('emergency-btns');
-        const backLoginBtn = document.getElementById('back-login');
-        const retryBtn = document.getElementById('retry');
-        const logoutBtn = document.getElementById('logout-btn');
-        const sendBroadcastBtn = document.getElementById('send-broadcast');
-        const msgInput = document.getElementById('msg-input');
-        const userCountEl = document.getElementById('user-count');
-        const userList = document.getElementById('user-list');
+        // --- NOTIFICACIONES ---
+        window.notify = (msg) => {
+            const container = document.getElementById('toast-container');
+            const t = document.createElement('div');
+            t.className = 'toast';
+            t.innerText = `> ${msg}`;
+            container.appendChild(t);
+            setTimeout(() => t.remove(), 3000);
+        };
 
-        // Timer de emergencia: Si en 6 segundos no carga, mostrar botones
-        setTimeout(() => {
-            const style = getComputedStyle(overlay);
-            if (style.display !== 'none') {
-                loadMsg.innerText = "ERROR: TIEMPO DE ESPERA AGOTADO";
-                emergencyBtns.style.display = 'block';
-            }
-        }, 6000);
-
-        backLoginBtn.addEventListener('click', () => location.href = 'index.html');
-        retryBtn.addEventListener('click', () => location.reload());
-
-        // Estado de autenticación
-        onAuthStateChanged(auth, async (user) => {
+        // --- SEGURIDAD ---
+        onAuthStateChanged(auth, async user => {
             if (user) {
-                loadMsg.innerText = "BUSCANDO CREDENCIALES...";
-                try {
-                    const snap = await getDoc(doc(db, "usuarios", user.uid));
-                    if (snap.exists() && snap.data().admin === true) {
-                        overlay.style.display = 'none';
-                        // Cargar lista de usuarios y sus cambios en tiempo real
-                        loadUsers();
-                    } else {
-                        loadMsg.innerHTML = "<span style='color:red'>ACCESO DENEGADO</span><br>No tienes rango admin en Firestore.";
-                        emergencyBtns.style.display = 'block';
-                    }
-                } catch (err) {
-                    console.error("Firestore error:", err);
-                    loadMsg.innerText = "ERROR DE FIRESTORE: Revisa las reglas o la conexión.";
-                    emergencyBtns.style.display = 'block';
+                const d = await getDoc(doc(db, "usuarios", user.uid));
+                if (d.exists() && d.data().admin === true) {
+                    document.getElementById('auth-check').style.display = 'none';
+                    loadData();
+                } else {
+                    alert("ACCESO DENEGADO: NO ERES ADMINISTRADOR");
+                    location.href = "index.html";
                 }
             } else {
-                // No autenticado -> volver al login
-                window.location.href = "index.html";
+                location.href = "index.html";
             }
         });
 
-        // Crea una fila segura en la tabla de usuarios (evita innerHTML)
-        function createUserRow(docSnap) {
-            const u = docSnap.data();
-            const tr = document.createElement('tr');
-
-            const nickTd = document.createElement('td');
-            nickTd.textContent = u.nick ?? '(sin nick)';
-            tr.appendChild(nickTd);
-
-            const puntosTd = document.createElement('td');
-            puntosTd.textContent = `${u.puntos ?? 0} XP`;
-            puntosTd.style.color = '#39FF14';
-            tr.appendChild(puntosTd);
-
-            const actionsTd = document.createElement('td');
-
-            const btnPlus = document.createElement('button');
-            btnPlus.textContent = '+100';
-            btnPlus.style.background = '#222';
-            btnPlus.style.color = '#fff';
-            btnPlus.className = 'small';
-            btnPlus.addEventListener('click', async () => {
-                btnPlus.disabled = true;
-                btnMinus.disabled = true;
-                try {
-                    await updateXP(docSnap.id, 100);
-                } catch (err) {
-                    alert('Error al actualizar puntos: ' + err.message);
-                } finally {
-                    btnPlus.disabled = false;
-                    btnMinus.disabled = false;
-                }
-            });
-
-            const btnMinus = document.createElement('button');
-            btnMinus.textContent = '-100';
-            btnMinus.style.background = '#222';
-            btnMinus.style.color = '#fff';
-            btnMinus.className = 'small';
-            btnMinus.addEventListener('click', async () => {
-                btnPlus.disabled = true;
-                btnMinus.disabled = true;
-                try {
-                    await updateXP(docSnap.id, -100);
-                } catch (err) {
-                    alert('Error al actualizar puntos: ' + err.message);
-                } finally {
-                    btnPlus.disabled = false;
-                    btnMinus.disabled = false;
-                }
-            });
-
-            actionsTd.appendChild(btnPlus);
-            actionsTd.appendChild(document.createTextNode(' '));
-            actionsTd.appendChild(btnMinus);
-            tr.appendChild(actionsTd);
-
-            return tr;
-        }
-
-        function loadUsers() {
-            onSnapshot(collection(db, "usuarios"), (snap) => {
-                userList.innerHTML = ""; // limpiar
-                userCountEl.innerText = snap.size;
+        // --- CARGAR DATOS ---
+        function loadData() {
+            // Usuarios
+            onSnapshot(collection(db, "usuarios"), snap => {
+                const tbody = document.getElementById('user-table');
+                tbody.innerHTML = "";
                 snap.forEach(d => {
-                    const row = createUserRow(d);
-                    userList.appendChild(row);
+                    const u = d.data();
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="font-weight:700">${u.nick}</td>
+                            <td class="badge-points">${u.puntos} XP</td>
+                            <td>${u.verificado ? '<span style="color:var(--neon)">[V]</span>' : '<span style="color:#333">[O]</span>'}</td>
+                            <td>
+                                <button class="action-btn" onclick="addPoints('${d.id}', 100)">+100</button>
+                                <button class="action-btn" onclick="toggleVerify('${d.id}', ${u.verificado})">VERIF</button>
+                                <button class="action-btn" onclick="deleteUser('${d.id}')" style="border-color:var(--error); color:var(--error)">DEL</button>
+                            </td>
+                        </tr>
+                    `;
                 });
-            }, (err) => {
-                console.error('Error escuchando usuarios:', err);
-                alert('No se pudo cargar la lista de usuarios.');
+            });
+
+            // Config Color
+            onSnapshot(doc(db, "config", "global"), d => {
+                if(d.exists()) {
+                    document.getElementById('conf-color').value = d.data().colorNeon;
+                    document.documentElement.style.setProperty('--neon', d.data().colorNeon);
+                }
             });
         }
 
-        // Funciones expuestas y seguras
-        window.updateXP = async (id, qty) => {
-            try {
-                // opcional: prevenir que puntos queden negativos, si lo deseas hay que leer el doc primero
-                await updateDoc(doc(db, "usuarios", id), { puntos: increment(qty) });
-            } catch (err) {
-                console.error('updateXP error:', err);
-                throw err;
+        // --- ACCIONES ---
+        window.addPoints = async (uid, pts) => {
+            await updateDoc(doc(db, "usuarios", uid), { puntos: increment(pts) });
+            notify("PUNTOS ASIGNADOS");
+        };
+
+        window.toggleVerify = async (uid, current) => {
+            await updateDoc(doc(db, "usuarios", uid), { verificado: !current });
+            notify("ESTADO DE VERIFICACIÓN ACTUALIZADO");
+        };
+
+        window.deleteUser = async (uid) => {
+            if(confirm("¿ELIMINAR OPERATIVO PERMANENTEMENTE?")) {
+                await deleteDoc(doc(db, "usuarios", uid));
+                notify("USUARIO ELIMINADO");
             }
         };
 
-        sendBroadcastBtn.addEventListener('click', async () => {
-            const val = msgInput.value.trim();
-            if (!val) {
-                alert('Escribe un mensaje antes de enviar.');
-                return;
-            }
-            sendBroadcastBtn.disabled = true;
-            try {
-                await addDoc(collection(db, "chat_global"), {
-                    nick: "SYSTEM", text: val.toUpperCase(), role: "admin", timestamp: serverTimestamp()
-                });
-                msgInput.value = "";
-                alert("ENVIADO");
-            } catch (err) {
-                console.error('sendBroadcast error:', err);
-                alert('Error al enviar broadcast: ' + err.message);
-            } finally {
-                sendBroadcastBtn.disabled = false;
-            }
-        });
-
-        window.handleLogout = async () => {
-            logoutBtn.disabled = true;
-            try {
-                await signOut(auth);
-                window.location.href = 'index.html';
-            } catch (err) {
-                console.error('Logout error:', err);
-                alert('Error al hacer logout: ' + err.message);
-            } finally {
-                logoutBtn.disabled = false;
-            }
+        window.updateColor = async (color) => {
+            await setDoc(doc(db, "config", "global"), { colorNeon: color }, { merge: true });
+            notify("SISTEMA DE COLOR ACTUALIZADO");
         };
-        logoutBtn.addEventListener('click', () => window.handleLogout());
+
+        window.createMission = async () => {
+            const n = document.getElementById('m-name').value;
+            const d = document.getElementById('m-desc').value;
+            if(!n || !d) return notify("COMPLETA LOS DATOS DE MISIÓN");
+
+            const id = "M" + Date.now();
+            await setDoc(doc(db, "torneos", id), {
+                nombre: n, desc: d, inscritos_count: 0, jugadores: [], active: true
+            });
+            notify("MISIÓN DESPLEGADA");
+            document.getElementById('m-name').value = "";
+            document.getElementById('m-desc').value = "";
+        };
+
+        window.logout = () => signOut(auth).then(() => location.reload());
 
     </script>
 </body>
