@@ -3,85 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA DE CONTROL | ACCESO TOTAL</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <title>SISTEMA DE CONTROL | TOTAL MANAGEMENT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&family=Fira+Code:wght@400&display=swap" rel="stylesheet">
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
     <style>
-        :root { --neon: #00f2ff; --bg: #020406; --card: #0a0e14; --error: #ff3131; --success: #39FF14; }
+        :root { --neon: #00f2ff; --bg: #030508; --card: #0d1117; --error: #ff3131; --gold: #ffd700; --silver: #c0c0c0; --bronze: #cd7f32; }
         body { margin: 0; background: var(--bg); color: #e0e6ed; font-family: 'Rajdhani', sans-serif; }
         
-        header { background: var(--card); padding: 15px 30px; border-bottom: 2px solid var(--neon); display: flex; justify-content: space-between; align-items: center; }
-        .container { max-width: 1200px; margin: 20px auto; padding: 0 20px; display: grid; grid-template-columns: 320px 1fr; gap: 20px; }
-        @media (max-width: 900px) { .container { grid-template-columns: 1fr; } }
+        header { background: var(--card); padding: 20px; border-bottom: 2px solid var(--neon); display: flex; justify-content: space-between; align-items: center; }
+        .grid { display: grid; grid-template-columns: 350px 1fr 350px; gap: 20px; padding: 20px; }
+        @media (max-width: 1200px) { .grid { grid-template-columns: 1fr; } }
 
-        .card { background: var(--card); border: 1px solid #1a1f26; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        .title { font-family: 'Orbitron'; font-size: 0.75rem; color: var(--neon); margin-bottom: 15px; border-bottom: 1px solid #1a1f26; padding-bottom: 8px; letter-spacing: 1px; }
+        .card { background: var(--card); border: 1px solid #1a1f26; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .title { font-family: 'Orbitron'; font-size: 0.8rem; color: var(--neon); margin-bottom: 15px; border-bottom: 1px solid #1a1f26; padding-bottom: 8px; display: flex; justify-content: space-between; }
 
-        input, textarea { width: 100%; padding: 12px; background: #000; border: 1px solid #222; color: #fff; margin-bottom: 12px; border-radius: 4px; box-sizing: border-box; }
+        input, textarea, select { width: 100%; padding: 10px; background: #000; border: 1px solid #222; color: #fff; margin-bottom: 10px; font-family: 'Fira Code'; }
         .btn { width: 100%; padding: 12px; background: var(--neon); border: none; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; border-radius: 4px; transition: 0.3s; color: #000; }
-        .btn:hover { background: #fff; box-shadow: 0 0 15px var(--neon); }
-        
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; font-size: 0.65rem; color: #555; text-transform: uppercase; padding: 10px; border-bottom: 1px solid #1a1f26; font-family: 'Orbitron'; }
-        td { padding: 15px 10px; border-bottom: 1px solid #05070a; font-size: 0.9rem; }
-        
-        .act { background: #111; border: 1px solid #333; color: #fff; padding: 6px 10px; cursor: pointer; border-radius: 3px; font-size: 0.7rem; margin-right: 5px; }
-        .act:hover { border-color: var(--neon); color: var(--neon); }
+        .btn:hover { filter: brightness(1.2); box-shadow: 0 0 15px var(--neon); }
+        .btn-win { background: var(--gold); margin-top: 5px; font-size: 0.6rem; }
 
-        #status-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--neon); color: #000; font-size: 0.7rem; padding: 3px 15px; font-weight: bold; font-family: 'Orbitron'; }
+        /* Estilos de Ranking */
+        .rank-item { display: flex; align-items: center; gap: 15px; padding: 10px; border-bottom: 1px solid #1a1f26; }
+        .pos-1 { border-left: 4px solid var(--gold); background: rgba(255, 215, 0, 0.05); }
+        .pos-2 { border-left: 4px solid var(--silver); }
+        .pos-3 { border-left: 4px solid var(--bronze); }
+        .badge { font-family: 'Orbitron'; font-size: 1.2rem; width: 30px; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th { text-align: left; color: #444; padding: 10px; border-bottom: 1px solid #222; }
+        td { padding: 10px; border-bottom: 1px solid #05070a; }
+        
+        .winner-list { list-style: none; padding: 0; }
+        .winner-list li { padding: 8px; background: #1a1f26; margin-bottom: 5px; border-radius: 4px; border-right: 3px solid var(--gold); font-size: 0.8rem; }
     </style>
 </head>
 <body>
 
     <header>
-        <div style="font-family:'Orbitron'; letter-spacing:2px; font-size: 1.2rem;">SISTEMA_<span style="color:var(--neon)">RAID</span>_CONTROL</div>
-        <div id="connection-status">● CONECTADO</div>
+        <div style="font-family:'Orbitron';">CORE_<span style="color:var(--neon)">COMMAND</span>_CENTER</div>
+        <div style="font-size: 0.7rem; font-family: 'Fira Code'; color: var(--neon);">STATUS: LINK_ESTABLISHED</div>
     </header>
 
-    <div class="container">
+    <div class="grid">
         <aside>
             <div class="card">
-                <div class="title">BROADCAST_GLOBAL</div>
-                <textarea id="sys-msg" rows="3" placeholder="Mensaje para todos los operativos..."></textarea>
-                <button class="btn" onclick="sendMsg()">ENVIAR MENSAJE</button>
+                <div class="title">NUEVA OPERACIÓN</div>
+                <input type="text" id="m-name" placeholder="Nombre de Misión">
+                <input type="number" id="m-cap" placeholder="Capacidad Máx. Jugadores">
+                <textarea id="m-desc" placeholder="Reglas y premios..."></textarea>
+                <button class="btn" onclick="createMission()">LANZAR MISIÓN</button>
             </div>
 
             <div class="card">
-                <div class="title">NUEVA_MISIÓN</div>
-                <input type="text" id="m-name" placeholder="Título del torneo">
-                <textarea id="m-desc" placeholder="Reglas y Recompensas"></textarea>
-                <button class="btn" onclick="createMission()">DESPLEGAR</button>
+                <div class="title">MENSAJE AL SISTEMA</div>
+                <textarea id="sys-msg" placeholder="Broadcast global..."></textarea>
+                <button class="btn" onclick="sendMsg()">ENVIAR A TODOS</button>
+            </div>
+
+            <div class="card">
+                <div class="title">HISTORIAL DE GANADORES</div>
+                <ul id="winners-log" class="winner-list">
+                    </ul>
             </div>
         </aside>
 
         <main>
             <div class="card">
-                <div class="title">OPERATIVOS_EN_RED (<span id="total-users">0</span>)</div>
+                <div class="title">OPERATIVOS Y PERFILES (<span id="total-users">0</span>)</div>
                 <div style="overflow-x: auto;">
                     <table>
                         <thead>
                             <tr>
-                                <th>OPERATIVO</th>
-                                <th>PUNTOS XP</th>
-                                <th>CONTROL</th>
+                                <th>JUGADOR / PERFIL</th>
+                                <th>XP TOTAL</th>
+                                <th>ACCIÓN XP</th>
+                                <th>ESTADO</th>
                             </tr>
                         </thead>
-                        <tbody id="user-table">
-                            </tbody>
+                        <tbody id="user-table"></tbody>
                     </table>
                 </div>
             </div>
         </main>
+
+        <aside>
+            <div class="card">
+                <div class="title">TOP 3 RANKING</div>
+                <div id="top-ranking">
+                    </div>
+            </div>
+
+            <div class="card">
+                <div class="title">SISTEMA DE PREMIACIÓN</div>
+                <p style="font-size:0.7rem; color:#666;">Selecciona un ganador para registrarlo en el salón de la fama.</p>
+                <select id="user-select-win">
+                    <option value="">Seleccionar Jugador...</option>
+                </select>
+                <button class="btn btn-win" onclick="recordWinner()">CORONAR GANADOR</button>
+            </div>
+        </aside>
     </div>
 
-    <div id="status-bar">MODO_CONTROL_DIRECTO: ACTIVO</div>
-
     <script>
-        // --- CONFIGURACIÓN DE TU FIREBASE ---
         const firebaseConfig = {
             apiKey: "AIzaSyAyGsnbyvxTEzvtgOXSmU_5Hj6gS6TOWKM",
             authDomain: "gaming-team-18b95.firebaseapp.com",
@@ -91,51 +118,107 @@
             appId: "1:89183017486:web:18b6258a2bf5c0bde97a5f"
         };
 
-        // Iniciar Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // --- CARGAR USUARIOS AL INICIAR ---
         function initAdmin() {
-            db.collection("usuarios").onSnapshot(snap => {
+            // Escuchar usuarios y perfiles
+            db.collection("usuarios").orderBy("puntos", "desc").onSnapshot(snap => {
                 const table = document.getElementById('user-table');
+                const topDiv = document.getElementById('top-ranking');
+                const selector = document.getElementById('user-select-win');
+                
                 document.getElementById('total-users').innerText = snap.size;
                 table.innerHTML = "";
-                
+                topDiv.innerHTML = "";
+                selector.innerHTML = '<option value="">Seleccionar Jugador...</option>';
+
+                let count = 1;
                 snap.forEach(doc => {
                     const u = doc.data();
+                    
+                    // Llenar Tabla Principal
                     table.innerHTML += `
                         <tr>
                             <td>
-                                <div style="font-weight:700; color:#fff;">${u.nick}</div>
-                                <div style="font-size:0.6rem; color:#444;">ID: ${doc.id}</div>
+                                <b>${u.nick}</b><br>
+                                <small style="color:#555">${u.whatsapp || 'Sin WhatsApp'}</small>
                             </td>
-                            <td style="color:var(--neon); font-family:'Orbitron'; font-weight:bold;">${u.puntos || 0} XP</td>
+                            <td style="color:var(--neon); font-weight:bold;">${u.puntos || 0} XP</td>
                             <td>
-                                <button class="act" onclick="modifyXP('${doc.id}', 100)">+100</button>
-                                <button class="act" onclick="modifyXP('${doc.id}', -100)">-100</button>
-                                <button class="act" onclick="deleteUser('${doc.id}')" style="color:var(--error); border-color:#400;">DEL</button>
+                                <button class="btn" style="width:auto; padding:5px 10px;" onclick="modifyXP('${doc.id}', 100)">+100</button>
+                                <button class="btn" style="width:auto; padding:5px 10px; background:#222; color:#fff;" onclick="modifyXP('${doc.id}', -100)">-100</button>
+                            </td>
+                            <td>
+                                <button class="btn" style="width:auto; padding:5px; background:var(--error); font-size:0.6rem;" onclick="deleteUser('${doc.id}')">ELIMINAR</button>
                             </td>
                         </tr>
                     `;
+
+                    // Llenar Top 3
+                    if(count <= 3) {
+                        topDiv.innerHTML += `
+                            <div class="rank-item pos-${count}">
+                                <div class="badge">${count === 1 ? '🥇' : count === 2 ? '🥈' : '🥉'}</div>
+                                <div>
+                                    <div style="font-weight:bold">${u.nick}</div>
+                                    <div style="font-size:0.7rem; color:var(--neon)">${u.puntos} PUNTOS</div>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    // Llenar Selector de Ganadores
+                    selector.innerHTML += `<option value="${u.nick}">${u.nick}</option>`;
+                    count++;
                 });
-            }, err => {
-                console.error("Error al leer:", err);
-                alert("Error de conexión. Revisa las reglas de Firestore.");
+            });
+
+            // Escuchar Historial de Ganadores
+            db.collection("ganadores").orderBy("fecha", "desc").limit(5).onSnapshot(snap => {
+                const log = document.getElementById('winners-log');
+                log.innerHTML = "";
+                snap.forEach(doc => {
+                    log.innerHTML += `<li>${doc.data().nick} - Ganador</li>`;
+                });
             });
         }
 
-        // --- FUNCIONES DE ACCIÓN ---
+        // --- ACCIONES ---
         window.modifyXP = (id, amt) => {
-            db.collection("usuarios").doc(id).update({
-                puntos: firebase.firestore.FieldValue.increment(amt)
-            }).then(() => console.log("XP Actualizado"));
+            db.collection("usuarios").doc(id).update({ puntos: firebase.firestore.FieldValue.increment(amt) });
         };
 
-        window.deleteUser = (id) => {
-            if(confirm("¿ELIMINAR ESTE OPERATIVO?")) {
-                db.collection("usuarios").doc(id).delete();
-            }
+        window.createMission = () => {
+            const n = document.getElementById('m-name').value;
+            const c = document.getElementById('m-cap').value;
+            const d = document.getElementById('m-desc').value;
+            if(!n || !c) return alert("Completa nombre y capacidad");
+
+            db.collection("torneos").add({
+                nombre: n,
+                capacidad: parseInt(c),
+                desc: d,
+                inscritos_count: 0,
+                jugadores: [],
+                active: true,
+                fecha_creacion: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                alert("Misión publicada");
+                document.getElementById('m-name').value = "";
+                document.getElementById('m-cap').value = "";
+                document.getElementById('m-desc').value = "";
+            });
+        };
+
+        window.recordWinner = () => {
+            const nick = document.getElementById('user-select-win').value;
+            if(!nick) return alert("Selecciona un jugador primero");
+            
+            db.collection("ganadores").add({
+                nick: nick,
+                fecha: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => alert("¡Ganador registrado!"));
         };
 
         window.sendMsg = () => {
@@ -148,28 +231,16 @@
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
                 document.getElementById('sys-msg').value = "";
-                alert("MENSAJE BROADCAST ENVIADO");
+                alert("Broadcast enviado");
             });
         };
 
-        window.createMission = () => {
-            const n = document.getElementById('m-name').value;
-            const d = document.getElementById('m-desc').value;
-            if(!n) return;
-            db.collection("torneos").add({
-                nombre: n,
-                desc: d,
-                inscritos_count: 0,
-                jugadores: [],
-                active: true
-            }).then(() => {
-                document.getElementById('m-name').value = "";
-                document.getElementById('m-desc').value = "";
-                alert("MISIÓN DESPLEGADA");
-            });
+        window.deleteUser = (id) => {
+            if(confirm("¿ELIMINAR ESTE USUARIO DEFINITIVAMENTE?")) {
+                db.collection("usuarios").doc(id).delete();
+            }
         };
 
-        // Ejecutar carga
         initAdmin();
     </script>
 </body>
