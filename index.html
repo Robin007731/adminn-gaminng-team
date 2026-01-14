@@ -12,12 +12,14 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         
         .card { background: #0d1117; border: 1px solid #1a1f26; padding: 20px; border-radius: 8px; margin: 10px; }
-        header { background: #0d1117; padding: 15px; border-bottom: 2px solid #00f2ff; display: flex; justify-content: space-between; }
+        header { background: #0d1117; padding: 15px; border-bottom: 2px solid #00f2ff; display: flex; justify-content: space-between; align-items:center; }
         button { cursor: pointer; padding: 10px; font-family: 'Orbitron'; font-size: 0.7rem; border-radius: 4px; border: none; }
         .btn-neon { background: #00f2ff; color: #000; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th { text-align: left; color: #00f2ff; font-size: 0.7rem; padding: 10px; border-bottom: 1px solid #222; }
         td { padding: 10px; border-bottom: 1px solid #111; font-size: 0.8rem; }
+        .muted { color: #9aa6b2; }
+        .small { font-size: 0.75rem; }
     </style>
 </head>
 <body>
@@ -26,21 +28,21 @@
         <div class="spinner"></div>
         <p id="load-msg" style="font-family:'Orbitron'; margin-top:20px;">INICIANDO SESIÓN...</p>
         <div id="emergency-btns" style="display:none; margin-top:20px;">
-            <button onclick="location.href='index.html'" style="background:#333; color:#fff;">VOLVER AL LOGIN</button>
-            <button onclick="location.reload()" style="background:#00f2ff; color:#000;">REINTENTAR</button>
+            <button id="back-login" style="background:#333; color:#fff;">VOLVER AL LOGIN</button>
+            <button id="retry" style="background:#00f2ff; color:#000;">REINTENTAR</button>
         </div>
     </div>
 
     <header>
         <div style="font-family:'Orbitron'; color:#00f2ff;">CORE_ADMIN</div>
-        <button onclick="window.handleLogout()" style="background:#ff3131; color:#fff;">LOGOUT</button>
+        <button id="logout-btn" style="background:#ff3131; color:#fff;">LOGOUT</button>
     </header>
 
     <div style="max-width: 1000px; margin: 20px auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
         <div class="card">
             <h3 style="font-family:'Orbitron'; font-size:0.8rem;">ANUNCIO SISTEMA</h3>
             <textarea id="msg-input" style="width:100%; background:#000; color:#fff; border:1px solid #333; padding:10px;"></textarea>
-            <button onclick="window.sendBroadcast()" class="btn-neon" style="margin-top:10px; width:100%;">ENVIAR A TODOS</button>
+            <button id="send-broadcast" class="btn-neon" style="margin-top:10px; width:100%;">ENVIAR A TODOS</button>
         </div>
         
         <div class="card">
@@ -77,73 +79,175 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
+        // Referencias DOM
+        const overlay = document.getElementById('loading-overlay');
+        const loadMsg = document.getElementById('load-msg');
+        const emergencyBtns = document.getElementById('emergency-btns');
+        const backLoginBtn = document.getElementById('back-login');
+        const retryBtn = document.getElementById('retry');
+        const logoutBtn = document.getElementById('logout-btn');
+        const sendBroadcastBtn = document.getElementById('send-broadcast');
+        const msgInput = document.getElementById('msg-input');
+        const userCountEl = document.getElementById('user-count');
+        const userList = document.getElementById('user-list');
+
         // Timer de emergencia: Si en 6 segundos no carga, mostrar botones
         setTimeout(() => {
-            if(document.getElementById('loading-overlay').style.display !== 'none') {
-                document.getElementById('load-msg').innerText = "ERROR: TIEMPO DE ESPERA AGOTADO";
-                document.getElementById('emergency-btns').style.display = 'block';
+            const style = getComputedStyle(overlay);
+            if (style.display !== 'none') {
+                loadMsg.innerText = "ERROR: TIEMPO DE ESPERA AGOTADO";
+                emergencyBtns.style.display = 'block';
             }
         }, 6000);
 
+        backLoginBtn.addEventListener('click', () => location.href = 'index.html');
+        retryBtn.addEventListener('click', () => location.reload());
+
+        // Estado de autenticación
         onAuthStateChanged(auth, async (user) => {
-            const msg = document.getElementById('load-msg');
             if (user) {
-                msg.innerText = "BUSCANDO CREDENCIALES...";
+                loadMsg.innerText = "BUSCANDO CREDENCIALES...";
                 try {
                     const snap = await getDoc(doc(db, "usuarios", user.uid));
                     if (snap.exists() && snap.data().admin === true) {
-                        document.getElementById('loading-overlay').style.display = 'none';
+                        overlay.style.display = 'none';
+                        // Cargar lista de usuarios y sus cambios en tiempo real
                         loadUsers();
                     } else {
-                        msg.innerHTML = "<span style='color:red'>ACCESO DENEGADO</span><br>No tienes rango admin en Firestore.";
-                        document.getElementById('emergency-btns').style.display = 'block';
+                        loadMsg.innerHTML = "<span style='color:red'>ACCESO DENEGADO</span><br>No tienes rango admin en Firestore.";
+                        emergencyBtns.style.display = 'block';
                     }
                 } catch (err) {
-                    msg.innerText = "ERROR DE FIRESTORE: Revisa las reglas.";
-                    document.getElementById('emergency-btns').style.display = 'block';
+                    console.error("Firestore error:", err);
+                    loadMsg.innerText = "ERROR DE FIRESTORE: Revisa las reglas o la conexión.";
+                    emergencyBtns.style.display = 'block';
                 }
             } else {
+                // No autenticado -> volver al login
                 window.location.href = "index.html";
             }
         });
 
+        // Crea una fila segura en la tabla de usuarios (evita innerHTML)
+        function createUserRow(docSnap) {
+            const u = docSnap.data();
+            const tr = document.createElement('tr');
+
+            const nickTd = document.createElement('td');
+            nickTd.textContent = u.nick ?? '(sin nick)';
+            tr.appendChild(nickTd);
+
+            const puntosTd = document.createElement('td');
+            puntosTd.textContent = `${u.puntos ?? 0} XP`;
+            puntosTd.style.color = '#39FF14';
+            tr.appendChild(puntosTd);
+
+            const actionsTd = document.createElement('td');
+
+            const btnPlus = document.createElement('button');
+            btnPlus.textContent = '+100';
+            btnPlus.style.background = '#222';
+            btnPlus.style.color = '#fff';
+            btnPlus.className = 'small';
+            btnPlus.addEventListener('click', async () => {
+                btnPlus.disabled = true;
+                btnMinus.disabled = true;
+                try {
+                    await updateXP(docSnap.id, 100);
+                } catch (err) {
+                    alert('Error al actualizar puntos: ' + err.message);
+                } finally {
+                    btnPlus.disabled = false;
+                    btnMinus.disabled = false;
+                }
+            });
+
+            const btnMinus = document.createElement('button');
+            btnMinus.textContent = '-100';
+            btnMinus.style.background = '#222';
+            btnMinus.style.color = '#fff';
+            btnMinus.className = 'small';
+            btnMinus.addEventListener('click', async () => {
+                btnPlus.disabled = true;
+                btnMinus.disabled = true;
+                try {
+                    await updateXP(docSnap.id, -100);
+                } catch (err) {
+                    alert('Error al actualizar puntos: ' + err.message);
+                } finally {
+                    btnPlus.disabled = false;
+                    btnMinus.disabled = false;
+                }
+            });
+
+            actionsTd.appendChild(btnPlus);
+            actionsTd.appendChild(document.createTextNode(' '));
+            actionsTd.appendChild(btnMinus);
+            tr.appendChild(actionsTd);
+
+            return tr;
+        }
+
         function loadUsers() {
             onSnapshot(collection(db, "usuarios"), (snap) => {
-                const list = document.getElementById('user-list');
-                document.getElementById('user-count').innerText = snap.size;
-                list.innerHTML = "";
+                userList.innerHTML = ""; // limpiar
+                userCountEl.innerText = snap.size;
                 snap.forEach(d => {
-                    const u = d.data();
-                    list.innerHTML += `
-                        <tr>
-                            <td>${u.nick}</td>
-                            <td style="color:#39FF14">${u.puntos} XP</td>
-                            <td>
-                                <button onclick="window.updateXP('${d.id}', 100)" style="background:#222; color:#fff;">+100</button>
-                                <button onclick="window.updateXP('${d.id}', -100)" style="background:#222; color:#fff;">-100</button>
-                            </td>
-                        </tr>
-                    `;
+                    const row = createUserRow(d);
+                    userList.appendChild(row);
                 });
+            }, (err) => {
+                console.error('Error escuchando usuarios:', err);
+                alert('No se pudo cargar la lista de usuarios.');
             });
         }
 
-        // EXPORTAR FUNCIONES A WINDOW PARA LOS BOTONES
+        // Funciones expuestas y seguras
         window.updateXP = async (id, qty) => {
-            await updateDoc(doc(db, "usuarios", id), { puntos: increment(qty) });
+            try {
+                // opcional: prevenir que puntos queden negativos, si lo deseas hay que leer el doc primero
+                await updateDoc(doc(db, "usuarios", id), { puntos: increment(qty) });
+            } catch (err) {
+                console.error('updateXP error:', err);
+                throw err;
+            }
         };
 
-        window.sendBroadcast = async () => {
-            const val = document.getElementById('msg-input').value;
-            if(!val) return;
-            await addDoc(collection(db, "chat_global"), {
-                nick: "SYSTEM", text: val.toUpperCase(), role: "admin", timestamp: serverTimestamp()
-            });
-            document.getElementById('msg-input').value = "";
-            alert("ENVIADO");
-        };
+        sendBroadcastBtn.addEventListener('click', async () => {
+            const val = msgInput.value.trim();
+            if (!val) {
+                alert('Escribe un mensaje antes de enviar.');
+                return;
+            }
+            sendBroadcastBtn.disabled = true;
+            try {
+                await addDoc(collection(db, "chat_global"), {
+                    nick: "SYSTEM", text: val.toUpperCase(), role: "admin", timestamp: serverTimestamp()
+                });
+                msgInput.value = "";
+                alert("ENVIADO");
+            } catch (err) {
+                console.error('sendBroadcast error:', err);
+                alert('Error al enviar broadcast: ' + err.message);
+            } finally {
+                sendBroadcastBtn.disabled = false;
+            }
+        });
 
-        window.handleLogout = () => signOut(auth).then(() => location.href='index.html');
+        window.handleLogout = async () => {
+            logoutBtn.disabled = true;
+            try {
+                await signOut(auth);
+                window.location.href = 'index.html';
+            } catch (err) {
+                console.error('Logout error:', err);
+                alert('Error al hacer logout: ' + err.message);
+            } finally {
+                logoutBtn.disabled = false;
+            }
+        };
+        logoutBtn.addEventListener('click', () => window.handleLogout());
+
     </script>
 </body>
 </html>
