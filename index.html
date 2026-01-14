@@ -3,156 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZONA GAMER | Tactical Command</title>
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Orbitron:wght@700&family=Fira+Code:wght@400&display=swap" rel="stylesheet">
+    <title>ZONA GAMER | CONTROL TOTAL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
     <style>
-        :root { 
-            --bg: #030508; --card: #0d1117; --neon: #00f2ff; --text: #e0e6ed; 
-            --success: #39FF14; --gold: #ffcc00; --error: #ff3131;
-        }
+        :root { --neon: #00f2ff; --bg: #020406; --card: #0a0e14; --error: #ff3131; }
+        body { margin: 0; background: var(--bg); color: #e0e6ed; font-family: 'Rajdhani', sans-serif; }
+        
+        /* Pantalla de Carga */
+        #loader { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .spin { width: 50px; height: 50px; border: 3px solid #111; border-top: 3px solid var(--neon); border-radius: 50%; animation: s 1s linear infinite; }
+        @keyframes s { to { transform: rotate(360deg); } }
 
-        * { box-sizing: border-box; outline: none; }
-        body { 
-            margin: 0; background: var(--bg); color: var(--text); 
-            font-family: 'Rajdhani', sans-serif; 
-        }
+        /* Dashboard */
+        header { background: var(--card); padding: 15px 30px; border-bottom: 2px solid var(--neon); display: flex; justify-content: space-between; align-items: center; }
+        .main { max-width: 1200px; margin: 20px auto; padding: 0 20px; display: grid; grid-template-columns: 320px 1fr; gap: 20px; }
+        @media (max-width: 900px) { .main { grid-template-columns: 1fr; } }
 
-        /* --- NOTIFICACIONES --- */
-        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 10000; }
-        .toast { 
-            background: #000; border: 1px solid var(--neon); color: #fff;
-            padding: 12px 25px; margin-bottom: 10px; font-family: 'Fira Code';
-            font-size: 0.75rem; box-shadow: 0 0 15px rgba(0,242,255,0.2);
-            animation: slideIn 0.3s ease;
-        }
-        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        .card { background: var(--card); border: 1px solid #1a1f26; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .title { font-family: 'Orbitron'; font-size: 0.7rem; color: var(--neon); margin-bottom: 15px; border-bottom: 1px solid #1a1f26; padding-bottom: 5px; }
 
-        /* --- LAYOUT --- */
-        header { 
-            background: var(--card); padding: 20px 40px; border-bottom: 2px solid var(--neon);
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 2fr; gap: 30px; }
-
-        @media (max-width: 900px) { .container { grid-template-columns: 1fr; } }
-
-        /* --- CARDS --- */
-        .card { 
-            background: var(--card); border: 1px solid rgba(255,255,255,0.05); 
-            padding: 25px; border-radius: 4px; position: relative;
-        }
-        .card-title { 
-            font-family: 'Orbitron'; font-size: 0.8rem; color: var(--neon); 
-            margin-bottom: 20px; display: flex; align-items: center; gap: 10px;
-            letter-spacing: 1px; border-bottom: 1px solid #1a1f26; padding-bottom: 10px;
-        }
-
-        /* --- FORMS --- */
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-size: 0.65rem; font-family: 'Orbitron'; margin-bottom: 5px; color: #555; }
-        input, textarea, select { 
-            width: 100%; padding: 12px; background: #000; border: 1px solid #1a1f26; 
-            color: #fff; font-family: 'Fira Code'; font-size: 0.85rem;
-        }
-        input:focus { border-color: var(--neon); }
-
-        .btn { 
-            width: 100%; padding: 14px; border: none; font-family: 'Orbitron'; 
-            font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.75rem;
-            transition: 0.3s;
-        }
-        .btn-neon { background: var(--neon); color: #000; }
-        .btn-neon:hover { box-shadow: 0 0 15px var(--neon); }
-        .btn-ghost { background: transparent; border: 1px solid #1a1f26; color: #555; margin-top: 10px; }
-
-        /* --- TABLES --- */
-        .table-wrapper { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; font-family: 'Fira Code'; font-size: 0.8rem; }
-        th { text-align: left; padding: 12px; color: var(--neon); border-bottom: 1px solid #1a1f26; font-family: 'Orbitron'; font-size: 0.6rem; }
-        td { padding: 12px; border-bottom: 1px solid #0a0e14; }
-        tr:hover { background: rgba(255,255,255,0.02); }
-
-        .badge-points { color: var(--success); font-weight: bold; }
-        .action-btn { 
-            padding: 5px 10px; background: transparent; border: 1px solid #222; 
-            color: #eee; cursor: pointer; font-size: 0.7rem; margin-right: 5px;
-        }
-        .action-btn:hover { border-color: var(--neon); color: var(--neon); }
-
-        /* --- SECTION SWITCHER --- */
-        #auth-check { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        input, textarea { width: 100%; padding: 10px; background: #000; border: 1px solid #222; color: #fff; margin-bottom: 10px; border-radius: 4px; }
+        .btn { width: 100%; padding: 12px; background: var(--neon); border: none; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; font-size: 0.6rem; color: #555; text-transform: uppercase; padding: 10px; border-bottom: 1px solid #1a1f26; }
+        td { padding: 12px 10px; border-bottom: 1px solid #05070a; font-size: 0.9rem; }
+        .act { background: #111; border: 1px solid #333; color: #fff; padding: 5px 8px; cursor: pointer; border-radius: 3px; font-size: 0.7rem; }
+        .act:hover { border-color: var(--neon); }
     </style>
 </head>
 <body>
 
-    <div id="toast-container"></div>
-
-    <div id="auth-check">
-        <div style="text-align:center">
-            <h2 style="font-family:'Orbitron'; color:var(--neon)">ESTABLISHING_COMMAND_LINK...</h2>
-            <p style="font-family:'Fira Code'; font-size:0.7rem; color:#333;">VERIFYING_ADMIN_CREDENTIALS</p>
-        </div>
+    <div id="loader">
+        <div class="spin"></div>
+        <p id="load-status" style="margin-top:20px; font-family:'Orbitron'; font-size:0.7rem;">SINCRONIZANDO...</p>
+        <button id="btn-cancel" onclick="location.href='index.html'" style="display:none; margin-top:20px; background:none; color:#444; border:1px solid #222; cursor:pointer;">CANCELAR</button>
     </div>
 
     <header>
-        <div style="font-family:'Orbitron'; letter-spacing:2px;">
-            <span style="color:var(--neon)">COMMAND</span>_CENTER <small style="font-size:0.5rem; color:#444;">V2.0</small>
-        </div>
-        <button class="action-btn" onclick="logout()" style="border-color:var(--error); color:var(--error)">TERMINATE_SYNC</button>
+        <div style="font-family:'Orbitron'; letter-spacing:2px;">MASTER_<span style="color:var(--neon)">ADMIN</span></div>
+        <button onclick="logout()" class="act" style="color:var(--error); border-color:var(--error)">CERRAR SESIÓN</button>
     </header>
 
-    <div class="container">
-        
-        <div class="sidebar">
-            <div class="card" style="margin-bottom: 30px;">
-                <div class="card-title">⚙️ SYSTEM_CONFIG</div>
-                <div class="form-group">
-                    <label>NEON_HEX_COLOR</label>
-                    <input type="color" id="conf-color" onchange="updateColor(this.value)" style="height:50px; padding:2px;">
-                </div>
-            </div>
-
+    <div class="main">
+        <aside>
             <div class="card">
-                <div class="card-title">📡 NEW_MISSION</div>
-                <div class="form-group">
-                    <label>MISSION_NAME</label>
-                    <input type="text" id="m-name" placeholder="Ej: Torneo Warzone Elite">
-                </div>
-                <div class="form-group">
-                    <label>OBJECTIVES (DESC)</label>
-                    <textarea id="m-desc" rows="3" placeholder="Detalles de la operación..."></textarea>
-                </div>
-                <button class="btn btn-neon" onclick="createMission()">DEPLOY_MISSION</button>
+                <div class="title">MENSAJE GLOBAL</div>
+                <textarea id="sys-msg" rows="3" placeholder="Escribir a todos los usuarios..."></textarea>
+                <button class="btn" onclick="sendMsg()">ENVIAR BROADCAST</button>
             </div>
-        </div>
-
-        <div class="main-content">
             <div class="card">
-                <div class="card-title">👥 OPERATIVE_DATABASE</div>
-                <div class="table-wrapper">
+                <div class="title">NUEVA MISIÓN</div>
+                <input type="text" id="m-name" placeholder="Nombre de la misión">
+                <textarea id="m-desc" placeholder="Reglas/Premios"></textarea>
+                <button class="btn" onclick="createMission()">PUBLICAR</button>
+            </div>
+        </aside>
+
+        <main>
+            <div class="card">
+                <div class="title">OPERATIVOS ACTIVOS (<span id="total-users">0</span>)</div>
+                <div style="overflow-x: auto;">
                     <table>
                         <thead>
                             <tr>
-                                <th>NICK</th>
-                                <th>XP_POINTS</th>
-                                <th>STATUS</th>
-                                <th>ACTIONS</th>
+                                <th>NICKNAME</th>
+                                <th>PUNTOS XP</th>
+                                <th>ACCIONES</th>
                             </tr>
                         </thead>
-                        <tbody id="user-table">
-                            </tbody>
+                        <tbody id="user-table"></tbody>
                     </table>
                 </div>
             </div>
-        </div>
-
+        </main>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, collection, query, orderBy, deleteDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
+    <script>
+        // --- CONFIGURACIÓN ---
         const firebaseConfig = {
             apiKey: "AIzaSyAyGsnbyvxTEzvtgOXSmU_5Hj6gS6TOWKM",
             authDomain: "gaming-team-18b95.firebaseapp.com",
@@ -162,107 +95,107 @@
             appId: "1:89183017486:web:18b6258a2bf5c0bde97a5f"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
+        // Inicializar
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
-        // --- NOTIFICACIONES ---
-        window.notify = (msg) => {
-            const container = document.getElementById('toast-container');
-            const t = document.createElement('div');
-            t.className = 'toast';
-            t.innerText = `> ${msg}`;
-            container.appendChild(t);
-            setTimeout(() => t.remove(), 3000);
-        };
+        const statusText = document.getElementById('load-status');
 
-        // --- SEGURIDAD ---
-        onAuthStateChanged(auth, async user => {
+        // Mostrar botón de cancelar si tarda mucho
+        setTimeout(() => document.getElementById('btn-cancel').style.display = 'block', 4000);
+
+        // --- LÓGICA DE ACCESO ---
+        auth.onAuthStateChanged(user => {
             if (user) {
-                const d = await getDoc(doc(db, "usuarios", user.uid));
-                if (d.exists() && d.data().admin === true) {
-                    document.getElementById('auth-check').style.display = 'none';
-                    loadData();
-                } else {
-                    alert("ACCESO DENEGADO: NO ERES ADMINISTRADOR");
-                    location.href = "index.html";
-                }
+                statusText.innerText = "COMPROBANDO RANGO...";
+                db.collection("usuarios").doc(user.uid).get()
+                .then(doc => {
+                    if (doc.exists && doc.data().admin === true) {
+                        document.getElementById('loader').style.display = 'none';
+                        initDashboard();
+                    } else {
+                        statusText.style.color = "red";
+                        statusText.innerText = "ERROR: NO TIENES PERMISOS DE ADMIN";
+                    }
+                })
+                .catch(err => {
+                    statusText.innerText = "ERROR DE LECTURA: " + err.message;
+                });
             } else {
-                location.href = "index.html";
+                window.location.href = 'index.html';
             }
         });
 
-        // --- CARGAR DATOS ---
-        function loadData() {
-            // Usuarios
-            onSnapshot(collection(db, "usuarios"), snap => {
-                const tbody = document.getElementById('user-table');
-                tbody.innerHTML = "";
-                snap.forEach(d => {
-                    const u = d.data();
-                    tbody.innerHTML += `
+        // --- DASHBOARD ---
+        function initDashboard() {
+            // Escuchar usuarios en tiempo real
+            db.collection("usuarios").onSnapshot(snap => {
+                const table = document.getElementById('user-table');
+                document.getElementById('total-users').innerText = snap.size;
+                table.innerHTML = "";
+                snap.forEach(doc => {
+                    const u = doc.data();
+                    table.innerHTML += `
                         <tr>
-                            <td style="font-weight:700">${u.nick}</td>
-                            <td class="badge-points">${u.puntos} XP</td>
-                            <td>${u.verificado ? '<span style="color:var(--neon)">[V]</span>' : '<span style="color:#333">[O]</span>'}</td>
+                            <td><b>${u.nick}</b><br><small style="color:#444">${doc.id}</small></td>
+                            <td style="color:var(--neon); font-weight:bold;">${u.puntos || 0} XP</td>
                             <td>
-                                <button class="action-btn" onclick="addPoints('${d.id}', 100)">+100</button>
-                                <button class="action-btn" onclick="toggleVerify('${d.id}', ${u.verificado})">VERIF</button>
-                                <button class="action-btn" onclick="deleteUser('${d.id}')" style="border-color:var(--error); color:var(--error)">DEL</button>
+                                <button class="act" onclick="modifyXP('${doc.id}', 100)">+100</button>
+                                <button class="act" onclick="modifyXP('${doc.id}', -100)">-100</button>
+                                <button class="act" onclick="deleteUser('${doc.id}')" style="color:var(--error)">DEL</button>
                             </td>
                         </tr>
                     `;
                 });
             });
-
-            // Config Color
-            onSnapshot(doc(db, "config", "global"), d => {
-                if(d.exists()) {
-                    document.getElementById('conf-color').value = d.data().colorNeon;
-                    document.documentElement.style.setProperty('--neon', d.data().colorNeon);
-                }
-            });
         }
 
-        // --- ACCIONES ---
-        window.addPoints = async (uid, pts) => {
-            await updateDoc(doc(db, "usuarios", uid), { puntos: increment(pts) });
-            notify("PUNTOS ASIGNADOS");
+        // --- FUNCIONES DE ACCIÓN ---
+        window.modifyXP = (id, amt) => {
+            db.collection("usuarios").doc(id).update({
+                puntos: firebase.firestore.FieldValue.increment(amt)
+            });
         };
 
-        window.toggleVerify = async (uid, current) => {
-            await updateDoc(doc(db, "usuarios", uid), { verificado: !current });
-            notify("ESTADO DE VERIFICACIÓN ACTUALIZADO");
-        };
-
-        window.deleteUser = async (uid) => {
-            if(confirm("¿ELIMINAR OPERATIVO PERMANENTEMENTE?")) {
-                await deleteDoc(doc(db, "usuarios", uid));
-                notify("USUARIO ELIMINADO");
+        window.deleteUser = (id) => {
+            if(confirm("¿ELIMINAR ESTE USUARIO?")) {
+                db.collection("usuarios").doc(id).delete();
             }
         };
 
-        window.updateColor = async (color) => {
-            await setDoc(doc(db, "config", "global"), { colorNeon: color }, { merge: true });
-            notify("SISTEMA DE COLOR ACTUALIZADO");
+        window.sendMsg = () => {
+            const txt = document.getElementById('sys-msg').value;
+            if(!txt) return;
+            db.collection("chat_global").add({
+                nick: "SYSTEM",
+                text: txt.toUpperCase(),
+                role: "admin",
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                document.getElementById('sys-msg').value = "";
+                alert("Broadcast enviado");
+            });
         };
 
-        window.createMission = async () => {
+        window.createMission = () => {
             const n = document.getElementById('m-name').value;
             const d = document.getElementById('m-desc').value;
-            if(!n || !d) return notify("COMPLETA LOS DATOS DE MISIÓN");
-
-            const id = "M" + Date.now();
-            await setDoc(doc(db, "torneos", id), {
-                nombre: n, desc: d, inscritos_count: 0, jugadores: [], active: true
+            if(!n) return;
+            db.collection("torneos").add({
+                nombre: n,
+                desc: d,
+                inscritos_count: 0,
+                jugadores: [],
+                active: true
+            }).then(() => {
+                document.getElementById('m-name').value = "";
+                document.getElementById('m-desc').value = "";
+                alert("Misión desplegada");
             });
-            notify("MISIÓN DESPLEGADA");
-            document.getElementById('m-name').value = "";
-            document.getElementById('m-desc').value = "";
         };
 
-        window.logout = () => signOut(auth).then(() => location.reload());
-
+        window.logout = () => auth.signOut();
     </script>
 </body>
 </html>
