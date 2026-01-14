@@ -3,171 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SQUAD CORE | Panel de Control Maestro</title>
+    <title>MASTER CONTROL | ZONA GAMER</title>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Orbitron:wght@700&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --bg: #030406; 
-            --card: #0d1117; 
-            --neon: #00f2ff; 
-            --text: #ffffff; 
-            --success: #39FF14; 
-            --error: #ff3e3e; 
-            --gold: #ffcc00; 
+            --bg: #02050a; --card: #0d1117; --neon: #00f2ff; --text: #ffffff; 
+            --success: #39FF14; --error: #ff3e3e; --gold: #ffcc00; 
         }
-
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; transition: all 0.2s; }
         body { 
             margin: 0; background: var(--bg); color: var(--text); 
-            font-family: 'Rajdhani', sans-serif; display: flex; 
-            height: 100vh; overflow: hidden; 
+            font-family: 'Rajdhani', sans-serif; display: flex; height: 100vh; overflow: hidden; 
         }
 
-        /* --- MENÚ LATERAL --- */
+        /* SIDEBAR */
         aside { 
-            width: 260px; background: #000; border-right: 1px solid #1f2937; 
+            width: 280px; background: #000; border-right: 1px solid #1f2937; 
             display: flex; flex-direction: column; padding: 25px; 
         }
-        .logo-admin { 
-            font-family: 'Orbitron'; font-size: 1.2rem; margin-bottom: 40px; 
-            color: var(--neon); text-shadow: 0 0 10px var(--neon); 
-        }
+        .brand { font-family: 'Orbitron'; font-size: 1.2rem; color: var(--neon); margin-bottom: 30px; text-align: center; }
         .side-btn { 
-            padding: 15px; margin-bottom: 12px; background: transparent; 
-            border: 1px solid #1f2937; color: #555; border-radius: 12px; 
-            cursor: pointer; font-family: 'Orbitron'; font-size: 0.65rem; 
-            text-align: left; transition: 0.3s; letter-spacing: 1px;
+            width: 100%; padding: 14px; margin-bottom: 8px; background: transparent; 
+            border: 1px solid #1f2937; color: #666; border-radius: 10px; 
+            cursor: pointer; font-family: 'Orbitron'; font-size: 0.65rem; text-align: left;
         }
-        .side-btn.active { 
-            border-color: var(--neon); color: var(--neon); 
-            background: rgba(0, 242, 255, 0.05); 
-        }
+        .side-btn.active { border-color: var(--neon); color: var(--neon); background: rgba(0,242,255,0.05); }
 
-        /* --- CONTENIDO PRINCIPAL --- */
-        main { flex: 1; padding: 40px; overflow-y: auto; background: #050608; }
-        .panel { display: none; animation: fadeIn 0.4s ease; }
+        /* CONTENIDO */
+        main { flex: 1; padding: 30px; overflow-y: auto; background: #05070c; }
+        .panel { display: none; animation: fadeIn 0.3s ease; }
         .panel.active { display: block; }
+        h1 { font-family: 'Orbitron'; font-size: 1.5rem; margin-bottom: 25px; border-bottom: 1px solid #1f2937; padding-bottom: 10px; }
 
-        h1 { font-family: 'Orbitron'; font-size: 1.5rem; margin-bottom: 30px; }
-
-        /* --- TARJETAS --- */
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
-        .card { 
-            background: var(--card); border: 1px solid #1f2937; 
-            border-radius: 20px; padding: 25px; 
-        }
-        .card h3 { 
-            margin: 0 0 20px 0; font-family: 'Orbitron'; 
-            font-size: 0.8rem; color: var(--neon); 
-        }
-
-        /* --- FORMULARIOS --- */
-        .input-group { margin-bottom: 15px; }
-        label { display: block; font-size: 0.6rem; font-family: 'Orbitron'; color: #444; margin-bottom: 5px; }
-        input, textarea { 
-            width: 100%; padding: 12px; background: #000; border: 1px solid #222; 
-            color: #fff; border-radius: 8px; font-family: 'Rajdhani'; 
-        }
-        .btn-send { 
-            width: 100%; padding: 15px; background: var(--neon); color: #000; 
-            border: none; border-radius: 10px; font-family: 'Orbitron'; 
-            font-weight: bold; cursor: pointer; 
-        }
-
-        /* --- TABLA DE USUARIOS --- */
-        .table-container { background: var(--card); border-radius: 20px; border: 1px solid #1f2937; overflow: hidden; }
-        table { width: 100%; border-collapse: collapse; }
-        th { 
-            background: #000; padding: 15px; text-align: left; 
-            font-family: 'Orbitron'; font-size: 0.6rem; color: var(--neon); 
-        }
-        td { padding: 15px; border-bottom: 1px solid #1f2937; vertical-align: middle; }
-        .user-info { display: flex; align-items: center; gap: 10px; }
-        .user-img { width: 35px; height: 35px; border-radius: 50%; border: 1px solid var(--neon); }
+        /* CARDS Y TABLAS */
+        .card { background: var(--card); border: 1px solid #1f2937; border-radius: 15px; padding: 20px; margin-bottom: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
         
-        /* --- CONTROLES DE PUNTOS --- */
-        .pts-badge { 
-            background: var(--success); color: #000; padding: 4px 8px; 
-            border-radius: 6px; font-weight: bold; font-family: 'Orbitron'; font-size: 0.8rem;
-        }
-        .btn-pts { 
-            padding: 5px 10px; border: 1px solid #222; background: transparent; 
-            color: #fff; border-radius: 5px; cursor: pointer; margin-right: 5px; 
-        }
-        .btn-pts:hover { border-color: var(--neon); }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; font-family: 'Orbitron'; font-size: 0.6rem; color: var(--neon); padding: 12px; border-bottom: 1px solid #1f2937; }
+        td { padding: 12px; border-bottom: 1px solid #111; font-size: 0.9rem; }
 
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        /* BOTONES DE ACCIÓN */
+        .btn-sm { padding: 5px 8px; border-radius: 5px; border: none; font-size: 0.7rem; font-family: 'Orbitron'; cursor: pointer; font-weight: bold; }
+        .btn-pts { background: #1f2937; color: var(--success); }
+        .btn-msg { background: var(--neon); color: #000; }
+        .btn-rank { background: var(--gold); color: #000; }
+        .btn-ban { background: var(--error); color: #fff; }
+        
+        input, textarea, select { 
+            width: 100%; padding: 10px; background: #000; border: 1px solid #222; 
+            color: #fff; border-radius: 8px; margin-bottom: 10px; font-family: 'Rajdhani'; 
+        }
+
+        .u-img { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--neon); vertical-align: middle; margin-right: 8px; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
     <aside>
-        <div class="logo-admin">CORE ADMIN</div>
-        <button class="side-btn active" onclick="showPanel('pan-misiones', this)">GESTIÓN MISIONES</button>
-        <button class="side-btn" onclick="showPanel('pan-usuarios', this)">BASE DE OPERATIVOS</button>
-        <button class="side-btn" onclick="showPanel('pan-global', this)">SISTEMA GLOBAL</button>
+        <div class="brand">ZONA GAMER<br><small style="font-size: 0.5rem; letter-spacing: 2px;">PANEL DE CONTROL</small></div>
+        <button class="side-btn active" onclick="switchTab('p-core', this)">NÚCLEO Y DISEÑO</button>
+        <button class="side-btn" onclick="switchTab('p-users', this)">OPERATIVOS (USUARIOS)</button>
+        <button class="side-btn" onclick="switchTab('p-mis', this)">MISIONES ACTIVAS</button>
     </aside>
 
     <main>
-        <div id="pan-misiones" class="panel active">
-            <h1>CENTRAL DE OPERACIONES</h1>
+        <div id="p-core" class="panel active">
+            <h1>CONTROL DEL SISTEMA</h1>
             <div class="grid">
                 <div class="card">
-                    <h3>CREAR MISIÓN NUEVA</h3>
-                    <div class="input-group">
-                        <label>NOMBRE DEL DESAFÍO</label>
-                        <input type="text" id="m-name" placeholder="Ej: Torneo Warzone 2.0">
-                    </div>
-                    <div class="input-group">
-                        <label>DESCRIPCIÓN OPERATIVA</label>
-                        <textarea id="m-desc" rows="3" placeholder="Reglas o detalles..."></textarea>
-                    </div>
-                    <div style="display:flex; gap:10px;">
-                        <div class="input-group" style="flex:1">
-                            <label>CUPOS</label>
-                            <input type="number" id="m-cupo" value="20">
-                        </div>
-                        <div class="input-group" style="flex:1">
-                            <label>PUNTOS RECOMPENSA</label>
-                            <input type="number" id="m-pts" value="100">
-                        </div>
-                    </div>
-                    <button class="btn-send" onclick="crearMision()">PUBLICAR MISIÓN</button>
-                </div>
-
-                <div class="card" style="grid-column: span 2;">
-                    <h3>MISIONES EN CURSO</h3>
-                    <div id="lista-misiones-admin"></div>
+                    <h3 style="font-family:'Orbitron'; font-size:0.8rem; color:var(--neon);">PERSONALIZACIÓN</h3>
+                    <label style="font-size:0.7rem;">NOMBRE DE LA APP</label>
+                    <input type="text" id="cfg-appName">
+                    <label style="font-size:0.7rem;">COLOR NEÓN</label>
+                    <input type="color" id="cfg-colorNeon" style="height:50px;">
+                    <label style="font-size:0.7rem;">ANUNCIO GLOBAL (BARRA SUPERIOR)</label>
+                    <textarea id="cfg-anuncio" placeholder="Escribe un aviso para todos..."></textarea>
+                    <label style="font-size:0.7rem;">WHATSAPP DE SOPORTE</label>
+                    <input type="text" id="cfg-waAdmin">
+                    <button class="btn-sm" style="width:100%; padding:15px; background:var(--neon); color:#000;" onclick="saveConfig()">ACTUALIZAR APP AL INSTANTE</button>
                 </div>
             </div>
         </div>
 
-        <div id="pan-usuarios" class="panel">
-            <h1>REGISTRO DE OPERATIVOS</h1>
-            <div class="table-container">
+        <div id="p-users" class="panel">
+            <h1>GESTIÓN DE OPERATIVOS</h1>
+            <div class="card">
                 <table>
                     <thead>
                         <tr>
                             <th>OPERATIVO</th>
-                            <th>WHATSAPP / CONTACTO</th>
-                            <th>PUNTAJE</th>
-                            <th>ACCIONES DE RANGO</th>
-                            <th>ESTADO</th>
+                            <th>PUNTOS</th>
+                            <th>ESTADO / RANGO</th>
+                            <th>ACCIONES DE PODER</th>
                         </tr>
                     </thead>
-                    <tbody id="lista-usuarios-admin"></tbody>
+                    <tbody id="user-table"></tbody>
                 </table>
             </div>
         </div>
 
-        <div id="pan-global" class="panel">
-            <h1>SISTEMA CENTRAL</h1>
-            <div class="card" style="max-width:450px;">
-                <h3>CONTROL DE IDENTIDAD (COLOR NEÓN)</h3>
-                <input type="color" id="color-picker" style="height:60px; cursor:pointer;" onchange="updateGlobalColor(this.value)">
-                <p style="font-size:0.8rem; color:#444; margin-top:15px; line-height:1.4;">
-                    Al cambiar este color, la interfaz de todos los jugadores se actualizará automáticamente con el nuevo estilo visual del equipo.
-                </p>
+        <div id="p-mis" class="panel">
+            <h1>MISIONES Y TORNEOS</h1>
+            <div class="grid">
+                <div class="card">
+                    <h3 style="font-family:'Orbitron'; font-size:0.8rem;">CREAR MISIÓN</h3>
+                    <input type="text" id="m-name" placeholder="Nombre de Misión">
+                    <textarea id="m-desc" placeholder="Descripción..."></textarea>
+                    <div style="display:flex; gap:10px;">
+                        <input type="number" id="m-pts" placeholder="Pts">
+                        <input type="number" id="m-cupo" placeholder="Cupos">
+                    </div>
+                    <button class="btn-sm" style="width:100%; background:var(--success); color:#000; padding:12px;" onclick="createMission()">LANZAR MISIÓN</button>
+                </div>
+                <div class="card">
+                    <h3 style="font-family:'Orbitron'; font-size:0.8rem;">LISTA DE ACTIVAS</h3>
+                    <div id="mission-list"></div>
+                </div>
             </div>
         </div>
     </main>
@@ -176,7 +130,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, setDoc, onSnapshot, updateDoc, deleteDoc, collection, query, orderBy, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // CONFIGURACIÓN FIREBASE (Misma que el cliente)
         const firebaseConfig = {
             apiKey: "AIzaSyAyGsnbyvxTEzvtgOXSmU_5Hj6gS6TOWKM",
             authDomain: "gaming-team-18b95.firebaseapp.com",
@@ -190,89 +143,102 @@
         const db = getFirestore(app);
 
         // NAVEGACIÓN
-        window.showPanel = (id, btn) => {
+        window.switchTab = (id, btn) => {
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             btn.classList.add('active');
         };
 
-        // GESTIÓN MISIONES
-        window.crearMision = async () => {
+        // --- LÓGICA CORE (REMOTO) ---
+        onSnapshot(doc(db, "config", "global"), (d) => {
+            if(d.exists()){
+                const cfg = d.data();
+                document.getElementById('cfg-appName').value = cfg.appName || "";
+                document.getElementById('cfg-colorNeon').value = cfg.colorNeon || "#00f2ff";
+                document.getElementById('cfg-waAdmin').value = cfg.waAdmin || "";
+                document.getElementById('cfg-anuncio').value = cfg.anuncio || "";
+                document.documentElement.style.setProperty('--neon', cfg.colorNeon);
+            }
+        });
+
+        window.saveConfig = async () => {
+            await setDoc(doc(db, "config", "global"), {
+                appName: document.getElementById('cfg-appName').value,
+                colorNeon: document.getElementById('cfg-colorNeon').value,
+                waAdmin: document.getElementById('cfg-waAdmin').value,
+                anuncio: document.getElementById('cfg-anuncio').value
+            }, { merge: true });
+            alert("¡App Actualizada!");
+        };
+
+        // --- LÓGICA USUARIOS (PODERES) ---
+        onSnapshot(query(collection(db, "usuarios"), orderBy("puntos", "desc")), snap => {
+            const table = document.getElementById('user-table');
+            table.innerHTML = "";
+            snap.forEach(ds => {
+                const u = ds.data();
+                table.innerHTML += `
+                <tr>
+                    <td>
+                        <img src="${u.avatar}" class="u-img">
+                        <b>${u.nick}</b> ${u.verificado ? '<span style="color:var(--neon)">✔️</span>' : ''}
+                    </td>
+                    <td><b style="color:var(--success)">${u.puntos}</b></td>
+                    <td style="font-size:0.7rem; color:var(--gold)">${u.rango || 'RECLUTA'}</td>
+                    <td>
+                        <button class="btn-sm btn-pts" onclick="modPts('${ds.id}', 10)">+10</button>
+                        <button class="btn-sm btn-msg" onclick="sendMsg('${ds.id}')">MSG</button>
+                        <button class="btn-sm btn-rank" onclick="setRank('${ds.id}')">RANGO</button>
+                        <button class="btn-sm" style="background:#fff;" onclick="toggleVerify('${ds.id}', ${u.verificado})">VERIF</button>
+                        <button class="btn-sm btn-ban" onclick="deleteUser('${ds.id}')">BAN</button>
+                    </td>
+                </tr>`;
+            });
+        });
+
+        window.modPts = async (uid, val) => { await updateDoc(doc(db, "usuarios", uid), { puntos: increment(val) }); };
+        
+        window.sendMsg = async (uid) => {
+            const m = prompt("Escribe mensaje privado para el usuario:");
+            if(m) await updateDoc(doc(db, "usuarios", uid), { notificacion: m, msg_timestamp: Date.now() });
+        };
+
+        window.setRank = async (uid) => {
+            const r = prompt("Nuevo Rango (Ej: ELITE, V.I.P, MOD):");
+            if(r) await updateDoc(doc(db, "usuarios", uid), { rango: r.toUpperCase() });
+        };
+
+        window.toggleVerify = async (uid, val) => { await updateDoc(doc(db, "usuarios", uid), { verificado: !val }); };
+
+        window.deleteUser = async (uid) => { if(confirm("¿Baneas a este usuario?")) await deleteDoc(doc(db, "usuarios", uid)); };
+
+        // --- LÓGICA MISIONES ---
+        window.createMission = async () => {
             const id = "MIS-" + Date.now();
-            const data = {
-                id,
-                nombre: document.getElementById('m-name').value,
+            await setDoc(doc(db, "torneos", id), {
+                id, nombre: document.getElementById('m-name').value,
                 desc: document.getElementById('m-desc').value,
-                cupo: parseInt(document.getElementById('m-cupo').value),
                 puntos_dar: parseInt(document.getElementById('m-pts').value),
-                estado: 'activo',
-                inscritos_count: 0,
-                jugadores: []
-            };
-            if(!data.nombre) return alert("Escribe el nombre de la misión");
-            await setDoc(doc(db, "torneos", id), data);
-            alert("MISIÓN DESPLEGADA");
-            document.getElementById('m-name').value = "";
-            document.getElementById('m-desc').value = "";
+                cupo: parseInt(document.getElementById('m-cupo').value),
+                estado: 'activo', inscritos_count: 0, jugadores: []
+            });
+            alert("Misión lanzada");
         };
 
         onSnapshot(collection(db, "torneos"), snap => {
-            const div = document.getElementById('lista-misiones-admin');
-            div.innerHTML = "";
+            const list = document.getElementById('mission-list');
+            list.innerHTML = "";
             snap.forEach(ds => {
                 const m = ds.data();
-                div.innerHTML += `
-                    <div style="background:#000; padding:15px; border-radius:12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; border-left:4px solid var(--neon);">
-                        <div>
-                            <b style="font-family:'Orbitron'; font-size:0.8rem;">${m.nombre}</b><br>
-                            <small style="color:#444;">${m.inscritos_count} / ${m.cupo} INSCRITOS</small>
-                        </div>
-                        <button onclick="borrarMision('${ds.id}')" style="background:var(--error); border:none; color:#fff; padding:8px 15px; border-radius:8px; cursor:pointer; font-family:'Orbitron'; font-size:0.6rem;">FINALIZAR</button>
-                    </div>`;
+                list.innerHTML += `<div style="padding:10px; border:1px solid #222; margin-bottom:5px; border-radius:10px; display:flex; justify-content:space-between;">
+                    <span>${m.nombre}</span> <button class="btn-sm btn-ban" onclick="delMis('${ds.id}')">X</button>
+                </div>`;
             });
         });
 
-        window.borrarMision = async (id) => { if(confirm("¿Archivar misión y eliminar del feed?")) await deleteDoc(doc(db, "torneos", id)); };
+        window.delMis = async (id) => { if(confirm("¿Borrar misión?")) await deleteDoc(doc(db, "torneos", id)); };
 
-        // GESTIÓN USUARIOS
-        onSnapshot(query(collection(db, "usuarios"), orderBy("puntos", "desc")), snap => {
-            const tbody = document.getElementById('lista-usuarios-admin');
-            tbody.innerHTML = "";
-            snap.forEach(ds => {
-                const u = ds.data();
-                tbody.innerHTML += `
-                    <tr>
-                        <td>
-                            <div class="user-info">
-                                <img src="${u.avatar}" class="user-img">
-                                <div><b>${u.nick}</b><br><small style="color:#444; font-size:0.7rem;">${u.email}</small></div>
-                            </div>
-                        </td>
-                        <td>
-                            <a href="https://wa.me/${u.whatsapp}" target="_blank" style="color:var(--success); text-decoration:none; font-family:'Orbitron'; font-size:0.7rem;">WA: ${u.whatsapp}</a>
-                        </td>
-                        <td><span class="pts-badge">${u.puntos}</span></td>
-                        <td>
-                            <button class="btn-pts" onclick="darPts('${ds.id}', 10)">+10</button>
-                            <button class="btn-pts" onclick="darPts('${ds.id}', 50)">+50</button>
-                            <button class="btn-pts" onclick="darPts('${ds.id}', -10)" style="color:var(--error)">-10</button>
-                        </td>
-                        <td>
-                            <button onclick="eliminarUser('${ds.id}')" style="background:none; border:none; color:#333; cursor:pointer; font-size:0.7rem;">ELIMINAR</button>
-                        </td>
-                    </tr>`;
-            });
-        });
-
-        window.darPts = async (uid, cant) => { await updateDoc(doc(db, "usuarios", uid), { puntos: increment(cant) }); };
-        window.eliminarUser = async (uid) => { if(confirm("¿Bannear permanentemente a este usuario?")) await deleteDoc(doc(db, "usuarios", uid)); };
-
-        // COLOR GLOBAL
-        window.updateGlobalColor = async (color) => {
-            await setDoc(doc(db, "config", "global"), { colorNeon: color }, { merge: true });
-        };
     </script>
 </body>
-
 </html>
