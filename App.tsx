@@ -10,12 +10,15 @@ import {
   updateDoc, 
   deleteDoc, 
   addDoc, 
-  increment 
+  increment,
+  getDoc
 } from './services/firebase';
 import Dashboard from './components/Dashboard';
 import TournamentManager from './components/TournamentManager';
 import ChatModerator from './components/ChatModerator';
 import UserManager from './components/UserManager';
+
+const MASTER_KEY = "Admin12345";
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AdminTab>(AdminTab.DASHBOARD);
@@ -23,30 +26,81 @@ const App: React.FC = () => {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [chat, setChat] = useState<ChatMessage[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  
+  // Auth state
+  const [isAdmin, setIsAdmin] = useState<boolean>(() => {
+    return sessionStorage.getItem('isZGA') === 'true';
+  });
+  const [loading, setLoading] = useState(true);
+  const [accessKey, setAccessKey] = useState('');
+  const [authError, setAuthError] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
 
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, "usuarios"), (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
-      setUsers(data);
-    });
-    return () => unsub();
+    // Simular carga de sistema inicial
+    const timer = setTimeout(() => setLoading(false), 1200);
+    return () => clearTimeout(timer);
   }, []);
 
+  // Real-time Listeners (Only if isAdmin)
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, "torneos"), (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Tournament));
-      setTournaments(data.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)));
-    });
-    return () => unsub();
-  }, []);
+    if (!isAdmin) return;
 
-  useEffect(() => {
-    const unsub = onSnapshot(collection(db, "chats"), (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ChatMessage));
-      setChat(data.sort((a, b) => a.timestamp - b.timestamp));
-    });
-    return () => unsub();
-  }, []);
+    // Users Listener
+    const unsubUsers = onSnapshot(collection(db, "usuarios"), 
+      (snapshot) => {
+        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+        setUsers(data);
+      },
+      (error) => console.error("Firestore Permission Error (Users): Check security rules.", error)
+    );
+
+    // Tournaments Listener
+    const unsubTournaments = onSnapshot(collection(db, "torneos"), 
+      (snapshot) => {
+        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Tournament));
+        setTournaments(data.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)));
+      },
+      (error) => console.error("Firestore Permission Error (Tournaments):", error)
+    );
+
+    // Chat Listener
+    const unsubChat = onSnapshot(collection(db, "chats"), 
+      (snapshot) => {
+        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ChatMessage));
+        setChat(data.sort((a, b) => a.timestamp - b.timestamp));
+      },
+      (error) => console.error("Firestore Permission Error (Chat):", error)
+    );
+
+    return () => {
+      unsubUsers();
+      unsubTournaments();
+      unsubChat();
+    };
+  }, [isAdmin]);
+
+  const handleAccess = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsVerifying(true);
+    setAuthError('');
+
+    setTimeout(() => {
+      if (accessKey === MASTER_KEY) {
+        setIsAdmin(true);
+        sessionStorage.setItem('isZGA', 'true');
+      } else {
+        setAuthError('CLAVE INCORRECTA. ACCESO DENEGADO.');
+        setAccessKey('');
+      }
+      setIsVerifying(false);
+    }, 800);
+  };
+
+  const handleLogout = () => {
+    setIsAdmin(false);
+    sessionStorage.removeItem('isZGA');
+  };
 
   const deleteMessage = async (id: string) => {
     await deleteDoc(doc(db, "chats", id));
@@ -77,7 +131,6 @@ const App: React.FC = () => {
   };
 
   const updateXP = async (userId: string, amount: number) => {
-    // Client expects 'puntos'
     await updateDoc(doc(db, "usuarios", userId), {
       puntos: increment(amount)
     });
@@ -93,7 +146,6 @@ const App: React.FC = () => {
   };
 
   const enviarAnuncio = async (texto: string) => {
-    // Matching the Client's system message logic
     await addDoc(collection(db, "chats"), {
       texto: "📢 AVISO: " + texto,
       senderNick: "SISTEMA",
@@ -102,6 +154,69 @@ const App: React.FC = () => {
       timestamp: Date.now()
     });
   };
+
+  if (loading) {
+    return (
+      <div className="h-screen bg-zinc-950 flex flex-col items-center justify-center">
+        <div className="w-16 h-16 border-4 border-[#FFD700] border-t-transparent rounded-full animate-spin mb-6"></div>
+        <p className="font-orbitron text-[#FFD700] tracking-[0.3em] text-sm animate-pulse">INICIALIZANDO COMANDO CENTRAL</p>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="h-screen bg-zinc-950 flex items-center justify-center p-6 font-orbitron">
+        <div className="w-full max-w-md bg-zinc-900 border-2 border-[#FFD700]/20 rounded-3xl p-10 shadow-[0_0_50px_rgba(255,215,0,0.05)] relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#FFD700] to-transparent opacity-50"></div>
+          
+          <div className="text-center mb-10">
+            <div className="w-20 h-20 bg-[#FFD700] rounded-2xl flex items-center justify-center text-black font-black text-4xl mx-auto mb-6 shadow-[0_0_30px_rgba(255,215,0,0.3)]">Z</div>
+            <h1 className="text-2xl font-black text-white tracking-tighter">ZONA GAMER</h1>
+            <p className="text-[#FFD700] text-[10px] tracking-[0.4em] mt-2 opacity-70 uppercase">Acceso Restringido</p>
+          </div>
+          
+          <form onSubmit={handleAccess} className="space-y-6">
+            <div className="relative">
+              <input 
+                type="password" 
+                value={accessKey}
+                onChange={(e) => setAccessKey(e.target.value)}
+                autoFocus
+                className="w-full bg-zinc-950 border-2 border-zinc-800 rounded-2xl p-4 text-center text-2xl tracking-[0.5em] text-[#FFD700] outline-none focus:border-[#FFD700] transition-all placeholder:text-zinc-800"
+                placeholder="••••••••"
+                required
+                disabled={isVerifying}
+              />
+              <div className="mt-2 text-center">
+                <label className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">Ingrese Master Key</label>
+              </div>
+            </div>
+
+            {authError && (
+              <div className="text-red-500 text-[10px] font-black bg-red-500/10 p-3 rounded-xl border border-red-500/20 text-center animate-bounce">
+                {authError}
+              </div>
+            )}
+
+            <button 
+              type="submit"
+              disabled={isVerifying}
+              className={`w-full bg-[#FFD700] text-black font-black py-5 rounded-2xl transition-all flex items-center justify-center gap-3 active:scale-95 ${isVerifying ? 'opacity-50' : 'hover:shadow-[0_0_20px_rgba(255,215,0,0.4)] hover:brightness-110'}`}
+            >
+              {isVerifying ? (
+                <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                'AUTORIZAR ACCESO'
+              )}
+            </button>
+          </form>
+          
+          <p className="text-center text-zinc-700 text-[9px] mt-10 tracking-widest uppercase font-bold">Encrypted connection established</p>
+        </div>
+      </div>
+    );
+  }
 
   const renderContent = () => {
     switch (activeTab) {
@@ -150,17 +265,19 @@ const App: React.FC = () => {
           ))}
         </nav>
         <div className="p-4 border-t border-zinc-800">
-          <div className="flex items-center gap-3 p-2">
-            <img src="https://picsum.photos/seed/admin/100" className="w-10 h-10 rounded-full border-2 border-[#FFD700]" alt="Admin" />
-            {isSidebarOpen && <div className="overflow-hidden"><p className="text-sm font-bold truncate text-[#FFD700]">Admin Maestro</p><p className="text-xs text-zinc-500 truncate">admin@zonagamer.com</p></div>}
-          </div>
+          <button onClick={handleLogout} className="w-full flex items-center gap-3 p-2 text-zinc-500 hover:text-red-500 transition-colors group">
+             <div className="w-10 h-10 rounded-full border-2 border-[#FFD700] flex items-center justify-center bg-zinc-950 text-[#FFD700] group-hover:border-red-500 group-hover:text-red-500">
+                {ICONS.Ban}
+             </div>
+             {isSidebarOpen && <div className="text-left"><p className="text-[10px] font-black uppercase tracking-widest">Desconectar</p><p className="text-[9px] opacity-40">ADMIN SESIÓN</p></div>}
+          </button>
         </div>
       </aside>
       <main className="flex-1 overflow-y-auto bg-[#09090b] relative">
         <header className="sticky top-0 z-10 flex items-center justify-between p-6 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-800">
           <h2 className="text-2xl font-orbitron font-bold uppercase tracking-wide">{activeTab.replace('_', ' ')}</h2>
           <div className="flex items-center gap-4">
-            <span className="px-3 py-1 bg-[#FFD700]/10 border border-[#FFD700]/30 text-[#FFD700] rounded-full text-xs font-bold uppercase">Admin Mode</span>
+            <span className="px-3 py-1 bg-[#FFD700]/10 border border-[#FFD700]/30 text-[#FFD700] rounded-full text-[10px] font-black uppercase tracking-tighter">Estado: Online</span>
           </div>
         </header>
         <div className="p-8 max-w-7xl mx-auto">{renderContent()}</div>
