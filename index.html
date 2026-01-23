@@ -2,415 +2,289 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARENA NEON | COMMAND CENTER v5.0</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ARENA NEON | ULTIMATE MASTER</title>
     
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --gold: #f59e0b;
-            --red: #ef4444;
-            --dark-bg: #02040a;
-            --glass: rgba(15, 23, 42, 0.9);
+            --neon: #00f2ff;
+            --pink: #ff00ff;
+            --admin: #ff3e3e;
+            --dark: #020408;
+            --glass: rgba(7, 10, 15, 0.9);
         }
 
-        body {
-            background-color: var(--dark-bg);
-            color: white;
-            font-family: 'Rajdhani', sans-serif;
-            margin: 0;
-            overflow: hidden;
-        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; scroll-behavior: smooth; }
+        body { background: var(--dark); color: #fff; font-family: 'Rajdhani', sans-serif; min-height: 100vh; overflow-x: hidden; }
 
+        /* --- FONDOS 4K DINÁMICOS --- */
+        .bg-system { position: fixed; inset: 0; z-index: -2; background: #000; overflow: hidden; }
+        .slide {
+            position: absolute; inset: 0; background-size: cover; background-position: center;
+            opacity: 0; animation: softFade 48s linear infinite;
+        }
+        .slide:nth-child(1) { background-image: url('https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2000'); animation-delay: 0s; }
+        .slide:nth-child(2) { background-image: url('https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=2000'); animation-delay: 8s; }
+        .slide:nth-child(3) { background-image: url('https://images.unsplash.com/photo-1538481199705-c710c4e965fc?q=80&w=2000'); animation-delay: 16s; }
+        @keyframes softFade { 0%, 100% { opacity: 0; transform: scale(1.05); } 10%, 25% { opacity: 0.4; } 35% { opacity: 0; } }
+        .bg-overlay { position: fixed; inset: 0; z-index: -1; background: linear-gradient(to bottom, transparent, var(--dark) 90%); }
+
+        /* --- UI ESTILOS --- */
+        .glass { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); }
         .font-orbitron { font-family: 'Orbitron', sans-serif; }
-
-        /* SIDEBAR ESTILO CYBER */
-        .sidebar {
-            background: #05070a;
-            border-right: 1px solid rgba(245, 158, 11, 0.2);
-            box-shadow: 10px 0 30px rgba(0,0,0,0.5);
+        
+        .btn-cyber {
+            background: transparent; border: 1px solid var(--neon); color: white;
+            font-family: 'Orbitron'; font-weight: 700; font-size: 10px;
+            text-transform: uppercase; letter-spacing: 2px;
+            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
+            transition: 0.3s; cursor: pointer; padding: 15px 35px;
         }
+        .btn-cyber:hover { background: var(--neon); color: black; box-shadow: 0 0 20px var(--neon); }
+        .btn-admin { border-color: var(--admin); color: var(--admin); }
+        .btn-admin:hover { background: var(--admin); color: white; box-shadow: 0 0 20px var(--admin); }
 
-        .nav-item {
-            width: 100%;
-            text-align: left;
-            padding: 20px 30px;
-            font-size: 11px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            transition: 0.3s;
-            border-left: 0px solid var(--gold);
-            color: #475569;
-        }
+        .app-view { display: none; width: 100%; }
+        .app-view.active { display: block; animation: fadeInUp 0.5s ease forwards; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        .nav-item.active {
-            background: rgba(245, 158, 11, 0.05);
-            border-left-width: 4px;
-            color: var(--gold);
-        }
-
-        /* CONTENEDORES */
-        .main-scroll {
-            height: 100vh;
-            overflow-y: auto;
-            padding: 40px;
-            scroll-behavior: smooth;
-        }
-
-        .view-section { display: none; animation: fadeIn 0.4s ease; }
-        .view-section.active { display: block; }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .glass-card {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-            transition: 0.3s;
-        }
-
-        .glass-card:hover { border-color: var(--gold); }
-
-        /* TABLAS E INPUTS */
-        input {
-            background: #000 !important;
-            border: 1px solid #1e293b !important;
-            color: white !important;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 13px;
-        }
-
-        .btn-gold {
-            background: var(--gold);
-            color: black;
-            font-family: 'Orbitron';
-            font-weight: 900;
-            font-size: 10px;
-            padding: 12px 24px;
-            border-radius: 4px;
-            text-transform: uppercase;
-            transition: 0.3s;
-        }
-
-        .btn-gold:hover { transform: scale(1.05); box-shadow: 0 0 15px var(--gold); }
-
-        /* LISTA PARTICIPANTES */
-        .participant-tag {
-            background: rgba(245, 158, 11, 0.1);
-            border: 1px solid rgba(245, 158, 11, 0.2);
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 10px;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        input, select { background: rgba(0,0,0,0.6) !important; border: 1px solid rgba(255,255,255,0.1) !important; color: white !important; padding: 14px; border-radius: 12px; width: 100%; }
+        
+        /* Loader */
+        #loader { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; align-items: center; justify-content: center; transition: 0.5s; }
     </style>
 </head>
 <body>
 
-    <div class="flex h-screen">
-        <aside class="w-80 sidebar flex flex-col">
-            <div class="p-10 border-b border-white/5">
-                <h1 class="font-orbitron text-2xl font-black italic tracking-tighter">NEON_ADMIN</h1>
-                <div class="flex items-center gap-2 mt-3">
-                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span class="text-[9px] text-zinc-500 font-bold uppercase tracking-[0.2em]">Acceso de Raíz</span>
+    <div class="bg-system">
+        <div class="slide"></div><div class="slide"></div><div class="slide"></div>
+    </div>
+    <div class="bg-overlay"></div>
+
+    <div id="loader">
+        <div class="w-10 h-10 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+
+    <div id="auth-screen" class="hidden min-h-screen flex items-center justify-center p-6">
+        <div class="glass p-8 rounded-[2rem] w-full max-w-md">
+            <h2 class="font-orbitron text-3xl font-black text-center mb-10 italic uppercase">Arena<span class="text-cyan-400">Neon</span></h2>
+            <form id="auth-form" class="space-y-4">
+                <div id="reg-extra" class="hidden">
+                    <div id="avatar-grid" class="grid grid-cols-5 gap-2 mb-4 max-h-32 overflow-y-auto p-2 bg-black/40 rounded-xl"></div>
+                    <input id="reg-name" type="text" placeholder="NOMBRE DE USUARIO" class="mb-4">
                 </div>
+                <input id="auth-email" type="email" placeholder="EMAIL" required>
+                <input id="auth-pass" type="password" placeholder="CONTRASEÑA" required>
+                <button type="submit" id="auth-btn" class="w-full btn-cyber">Acceder</button>
+            </form>
+            <button onclick="toggleAuth()" class="w-full text-center mt-6 text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Cambiar Registro/Login</button>
+        </div>
+    </div>
+
+    <div id="app-container" class="hidden">
+        <header class="fixed top-0 w-full z-50 glass p-5 flex justify-between items-center border-b border-white/5">
+            <h1 id="logo" class="font-orbitron text-[10px] font-black text-cyan-400 tracking-widest">ARENA_MASTER_V18</h1>
+            <div class="flex gap-2">
+                <button id="admin-mode-btn" onclick="nav('admin')" class="hidden text-[9px] font-bold text-red-500 border border-red-500/30 px-3 py-1 rounded">ADMIN</button>
+                <button onclick="logout()" class="text-[9px] font-bold text-zinc-400 border border-white/10 px-3 py-1 rounded">SALIR</button>
             </div>
+        </header>
 
-            <nav class="flex-1 py-6">
-                <button onclick="showTab('users')" id="tab-users" class="nav-item active">👤 Gestión Guerreros</button>
-                <button onclick="showTab('tourneys')" id="tab-tourneys" class="nav-item">⚔️ Control de Arenas</button>
-                <button onclick="showTab('support')" id="tab-support" class="nav-item">📩 Tickets Soporte</button>
-                <button onclick="showTab('system')" id="tab-system" class="nav-item">⚙️ Comandos de Sistema</button>
-            </nav>
-
-            <div class="p-8 border-t border-white/5">
-                <button onclick="window.location.href='index.html'" class="w-full py-3 text-[10px] font-black uppercase border border-white/10 text-zinc-500 hover:text-white transition">Volver a Web</button>
-            </div>
-        </aside>
-
-        <main class="flex-1 main-scroll">
+        <main class="pt-28 pb-32 px-6 max-w-5xl mx-auto">
             
-            <section id="sec-users" class="view-section active">
-                <div class="flex justify-between items-end mb-10">
-                    <div>
-                        <h2 class="font-orbitron text-4xl font-black italic uppercase">Guerreros</h2>
-                        <p class="text-zinc-600 text-xs font-bold uppercase tracking-widest mt-1">Base de datos de perfiles registrados</p>
-                    </div>
-                    <div class="flex gap-4">
-                        <input type="text" id="user-search" onkeyup="filterUsers()" placeholder="BUSCAR USUARIO..." class="w-64">
-                        <button onclick="loadUsers()" class="btn-gold">Refrescar</button>
-                    </div>
+            <section id="view-home" class="app-view active text-center">
+                <p class="text-cyan-400 font-bold tracking-[0.5em] text-[10px] uppercase mb-4">Conexión Establecida</p>
+                <h2 class="font-orbitron text-4xl md:text-6xl font-black italic mb-8">TU LEYENDA <br> <span class="text-cyan-400">EMPIEZA AQUÍ.</span></h2>
+                <div class="glass p-6 rounded-3xl inline-block mb-10 border-cyan-500/20">
+                    <p id="u-name" class="font-orbitron text-xl uppercase tracking-tighter">---</p>
+                    <p id="u-xp" class="text-[10px] text-zinc-500 font-bold mt-1 uppercase">XP: 0 | WINS: 0</p>
                 </div>
-
-                <div class="glass-card overflow-hidden">
-                    <table class="w-full text-left">
-                        <thead class="bg-white/5 font-orbitron text-[10px] text-zinc-500">
-                            <tr>
-                                <th class="p-6">Identidad</th>
-                                <th class="p-6">Puntos XP</th>
-                                <th class="p-6">Victorias</th>
-                                <th class="p-6">Privilegios</th>
-                                <th class="p-6">Estado</th>
-                                <th class="p-6 text-right">Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody id="user-table" class="text-sm">
-                            </tbody>
-                    </table>
-                </div>
+                <br>
+                <button onclick="nav('torneos')" class="btn-cyber">Ver Torneos</button>
             </section>
 
-            <section id="sec-tourneys" class="view-section">
-                <div class="flex justify-between items-center mb-10">
-                    <div>
-                        <h2 class="font-orbitron text-4xl font-black italic uppercase">Arenas</h2>
-                        <p class="text-zinc-600 text-xs font-bold uppercase tracking-widest mt-1">Gestión de combates programados</p>
-                    </div>
-                    <button onclick="openModal('t-modal')" class="btn-gold">+ Nueva Arena</button>
-                </div>
-
-                <div id="tourney-list" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    </div>
+            <section id="view-torneos" class="app-view">
+                <h3 class="font-orbitron text-xl mb-8 uppercase italic border-l-2 border-cyan-500 pl-4">Arenas Disponibles</h3>
+                <div id="torneos-list" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
             </section>
 
-            <section id="sec-support" class="view-section">
-                <h2 class="font-orbitron text-4xl font-black italic uppercase mb-10">Bandeja_Entrada</h2>
-                <div id="support-list" class="space-y-4 max-w-4xl">
-                    </div>
+            <section id="view-ranking" class="app-view max-w-xl mx-auto">
+                <h3 class="font-orbitron text-xl text-center mb-10 uppercase tracking-widest italic">Top Operativos</h3>
+                <div id="ranking-list" class="space-y-3"></div>
             </section>
 
-            <section id="sec-system" class="view-section">
-                <h2 class="font-orbitron text-4xl font-black italic uppercase mb-10">Consola_Raíz</h2>
+            <section id="view-admin" class="app-view">
+                <h3 class="font-orbitron text-xl mb-8 uppercase text-red-500 italic">Panel de Control Maestro</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="glass-card p-8 border-l-4 border-amber-500">
-                        <h4 class="font-orbitron font-bold mb-4">MANDO MASIVO</h4>
-                        <p class="text-xs text-zinc-500 mb-6 uppercase">Acciones que afectan a todos los perfiles a la vez.</p>
-                        <div class="space-y-3">
-                            <button onclick="massXP()" class="w-full text-left p-4 bg-white/5 hover:bg-white/10 rounded flex justify-between items-center text-xs font-bold">
-                                <span>DAR +1000 XP A TODOS LOS JUGADORES</span>
-                                <span class="text-amber-500">EJECUTAR</span>
-                            </button>
-                        </div>
+                    <div class="glass p-6 rounded-3xl border-t border-red-500/30">
+                        <h4 class="font-orbitron text-sm mb-6 text-red-500 uppercase">Crear Nueva Arena</h4>
+                        <form id="form-torneo" class="space-y-4">
+                            <input type="text" id="t-nombre" placeholder="Nombre del Torneo">
+                            <select id="t-juego">
+                                <option value="WARZONE">WARZONE</option>
+                                <option value="FORTNITE">FORTNITE</option>
+                                <option value="FREE FIRE">FREE FIRE</option>
+                            </select>
+                            <input type="number" id="t-cap" placeholder="Capacidad Máx">
+                            <button type="submit" class="w-full btn-cyber btn-admin">Publicar Torneo</button>
+                        </form>
                     </div>
-                    <div class="glass-card p-8 border-l-4 border-red-600">
-                        <h4 class="font-orbitron font-bold mb-4">ZONA DE PELIGRO</h4>
-                        <p class="text-xs text-zinc-500 mb-6 uppercase">Eliminación completa de registros.</p>
-                        <button onclick="resetArenas()" class="w-full py-4 bg-red-600/10 text-red-500 text-[10px] font-black uppercase rounded border border-red-600/30 hover:bg-red-600 hover:text-white transition">Borrar Todos los Torneos</button>
+                    <div class="glass p-6 rounded-3xl border-t border-red-500/30 h-[400px] overflow-y-auto">
+                        <h4 class="font-orbitron text-sm mb-6 text-red-500 uppercase">Gestionar Usuarios</h4>
+                        <div id="admin-user-list" class="space-y-3"></div>
                     </div>
                 </div>
             </section>
         </main>
-    </div>
 
-    <div id="t-modal" class="fixed inset-0 bg-black/95 z-[5000] hidden items-center justify-center p-6">
-        <div class="glass-card p-10 w-full max-w-md border-2 border-amber-500/50 shadow-[0_0_50px_rgba(245,158,11,0.2)]">
-            <h3 class="font-orbitron text-2xl font-black mb-8 text-amber-500 uppercase italic">Desplegar Arena</h3>
-            <div class="space-y-5">
-                <input id="new-t-name" type="text" placeholder="NOMBRE DEL TORNEO" class="w-full !w-full">
-                <input id="new-t-game" type="text" placeholder="JUEGO (FREE FIRE, ETC)" class="w-full !w-full">
-                <div class="grid grid-cols-2 gap-4">
-                    <input id="new-t-cap" type="number" placeholder="CAPACIDAD" value="16" class="w-full !w-full">
-                    <input id="new-t-ins" type="number" placeholder="INSCRITOS" value="0" class="w-full !w-full">
-                </div>
-                <div class="flex gap-4 pt-6">
-                    <button onclick="createTournament()" class="flex-1 btn-gold">Publicar</button>
-                    <button onclick="closeModal('t-modal')" class="flex-1 text-xs font-bold uppercase text-zinc-500">Cancelar</button>
-                </div>
-            </div>
-        </div>
+        <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 glass rounded-full flex justify-around items-center p-3 w-[85%] max-w-xs border-white/10 shadow-2xl">
+            <button onclick="nav('home')" class="p-3 text-xl hover:text-cyan-400 transition">🏠</button>
+            <button onclick="nav('torneos')" class="p-3 text-xl hover:text-cyan-400 transition">⚔️</button>
+            <button onclick="nav('ranking')" class="p-3 text-xl hover:text-cyan-400 transition">🏆</button>
+            <button onclick="nav('perfil')" class="p-3 text-xl hover:text-cyan-400 transition">👤</button>
+        </nav>
     </div>
 
     <script>
-        // CONEXIÓN
-        const _supa = supabase.createClient('https://qxvqxdsfcvdmanxtzmkn.supabase.co', 'sb_publishable_X2_itSXVSMUgkZeDLSE3KQ_HxD1Jf07');
+        const SB_URL = 'https://qxvqxdsfcvdmanxtzmkn.supabase.co';
+        const SB_KEY = 'sb_publishable_X2_itSXVSMUgkZeDLSE3KQ_HxD1Jf07';
+        const _supa = supabase.createClient(SB_URL, SB_KEY);
 
-        // NAVEGACIÓN
-        function showTab(id) {
-            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById('sec-' + id).classList.add('active');
-            document.getElementById('tab-' + id).classList.add('active');
-            
-            if(id === 'users') loadUsers();
-            if(id === 'tourneys') loadTourneys();
-            if(id === 'support') loadSupport();
+        let userSession = null;
+        let isLogin = true;
+        let selAvatar = "https://api.dicebear.com/7.x/bottts/svg?seed=1";
+        const ADMIN_EMAIL = "admin@arena.com"; // CAMBIA ESTO PARA TU ACCESO ADMIN
+
+        window.onload = async () => {
+            renderAvatarGrid();
+            const { data } = await _supa.auth.getSession();
+            if (data.session) {
+                userSession = data.session;
+                if(userSession.user.email === ADMIN_EMAIL) document.getElementById('admin-mode-btn').classList.remove('hidden');
+                loadProfile();
+            } else {
+                document.getElementById('auth-screen').classList.remove('hidden');
+            }
+            setTimeout(() => document.getElementById('loader').style.display = 'none', 1000);
+        };
+
+        // --- LÓGICA DE USUARIOS ---
+        function toggleAuth() {
+            isLogin = !isLogin;
+            document.getElementById('reg-extra').classList.toggle('hidden', isLogin);
+            document.getElementById('auth-btn').innerText = isLogin ? 'Acceder' : 'Registrar';
         }
 
-        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-
-        // --- GESTIÓN DE USUARIOS ---
-        async function loadUsers() {
-            const { data } = await _supa.from('perfiles').select('*').order('created_at', {ascending: false});
-            const table = document.getElementById('user-table');
-            table.innerHTML = data.map(u => `
-                <tr class="border-b border-white/5 hover:bg-white/5 transition">
-                    <td class="p-6 flex items-center gap-4">
-                        <img src="${u.avatar_url}" class="w-10 h-10 rounded-lg border border-white/10">
-                        <div>
-                            <p class="font-bold uppercase tracking-tighter">${u.nombre}</p>
-                            <p class="text-[9px] text-zinc-600 font-mono">${u.id.slice(0,18)}</p>
-                        </div>
-                    </td>
-                    <td class="p-6"><input type="number" value="${u.xp}" onchange="updateVal('${u.id}', 'xp', this.value)" class="w-20"></td>
-                    <td class="p-6"><input type="number" value="${u.victorias}" onchange="updateVal('${u.id}', 'victorias', this.value)" class="w-16"></td>
-                    <td class="p-6">
-                        <button onclick="toggleAdmin('${u.id}', ${u.is_admin})" class="text-[10px] font-black ${u.is_admin ? 'text-amber-500' : 'text-zinc-600'}">
-                            ${u.is_admin ? 'ADMINISTRADOR' : 'JUGADOR'}
-                        </button>
-                    </td>
-                    <td class="p-6">
-                        <span class="text-[9px] font-black ${u.baneado ? 'text-red-500' : 'text-green-500'}">
-                            ${u.baneado ? 'BANEADO' : 'ACTIVO'}
-                        </span>
-                    </td>
-                    <td class="p-6 text-right">
-                        <button onclick="toggleBan('${u.id}', ${u.baneado})" class="text-[9px] font-bold border ${u.baneado ? 'border-green-500 text-green-500' : 'border-red-500 text-red-500'} px-2 py-1 rounded">
-                            ${u.baneado ? 'RESTAURAR' : 'EXPULSAR'}
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        async function updateVal(id, field, val) {
-            const upd = {}; upd[field] = parseInt(val);
-            await _supa.from('perfiles').update(upd).eq('id', id);
-        }
-
-        async function toggleAdmin(id, state) {
-            await _supa.from('perfiles').update({is_admin: !state}).eq('id', id);
-            loadUsers();
-        }
-
-        async function toggleBan(id, state) {
-            await _supa.from('perfiles').update({baneado: !state}).eq('id', id);
-            loadUsers();
-        }
-
-        // --- GESTIÓN DE TORNEOS E INSCRITOS ---
-        async function loadTourneys() {
-            const { data: torneos } = await _supa.from('torneos').select('*').order('created_at', {ascending: false});
-            const { data: inscripciones } = await _supa.from('inscripciones').select('torneo_id, perfiles(nombre)');
-
-            const container = document.getElementById('tourney-list');
-            container.innerHTML = torneos.map(t => {
-                // Filtrar quiénes están en este torneo
-                const participantes = inscripciones
-                    .filter(i => i.torneo_id === t.id)
-                    .map(i => i.perfiles.nombre);
-
-                return `
-                    <div class="glass-card p-8 border-t-2 border-amber-500">
-                        <div class="flex justify-between items-start mb-6">
-                            <div>
-                                <h4 class="font-orbitron font-bold text-xl uppercase italic">${t.nombre}</h4>
-                                <p class="text-[10px] text-amber-500 font-bold uppercase tracking-widest">${t.juego}</p>
-                            </div>
-                            <button onclick="deleteTourney('${t.id}')" class="text-red-500 font-black hover:scale-125 transition">×</button>
-                        </div>
-
-                        <div class="bg-black/50 p-4 rounded-xl mb-6">
-                            <div class="flex justify-between text-[10px] font-black uppercase mb-3">
-                                <span class="text-zinc-500">Participantes (${t.inscritos}/${t.capacidad})</span>
-                            </div>
-                            <div class="space-y-2 max-h-32 overflow-y-auto pr-2">
-                                ${participantes.length > 0 
-                                    ? participantes.map(p => `
-                                        <div class="participant-tag">
-                                            <span>${p}</span>
-                                            <span class="text-[8px] text-amber-500 opacity-50">CONFIRMADO</span>
-                                        </div>`).join('')
-                                    : `<p class="text-[10px] text-zinc-700 italic text-center py-2 uppercase">No hay guerreros inscritos</p>`
-                                }
-                            </div>
-                        </div>
-
-                        <div class="flex gap-3">
-                            <button class="flex-1 py-2 bg-white/5 rounded text-[9px] font-black uppercase hover:bg-white/10 transition">Editar Datos</button>
-                            <button class="flex-1 py-2 bg-white/5 rounded text-[9px] font-black uppercase hover:bg-white/10 transition">Ver Estadísticas</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        async function createTournament() {
-            const n = document.getElementById('new-t-name').value;
-            const j = document.getElementById('new-t-game').value;
-            const c = document.getElementById('new-t-cap').value;
-            const i = document.getElementById('new-t-ins').value;
-            
-            const { error } = await _supa.from('torneos').insert({
-                nombre: n.toUpperCase(), juego: j.toUpperCase(), capacidad: c, inscritos: i
-            });
-            
-            if(!error) { closeModal('t-modal'); loadTourneys(); }
-        }
-
-        async function deleteTourney(id) {
-            if(confirm("¿ELIMINAR ESTE TORNEO Y TODAS SUS INSCRIPCIONES?")) {
-                await _supa.from('torneos').delete().eq('id', id);
-                loadTourneys();
+        function renderAvatarGrid() {
+            const grid = document.getElementById('avatar-grid');
+            for(let i=1; i<=10; i++) {
+                const url = `https://api.dicebear.com/7.x/bottts/svg?seed=${i}`;
+                const img = document.createElement('img');
+                img.src = url; img.className = "w-10 h-10 rounded-lg cursor-pointer border-2 border-transparent";
+                img.onclick = () => {
+                    document.querySelectorAll('#avatar-grid img').forEach(el => el.style.borderColor = 'transparent');
+                    img.style.borderColor = '#00f2ff'; selAvatar = url;
+                };
+                grid.appendChild(img);
             }
         }
 
-        // --- GESTIÓN SOPORTE ---
-        async function loadSupport() {
-            const { data } = await _supa.from('tickets_soporte').select('*').order('created_at', {ascending: false});
-            const container = document.getElementById('support-list');
-            if(!data.length) { container.innerHTML = "<p class='text-zinc-600 font-bold uppercase text-xs'>Sin mensajes pendientes.</p>"; return; }
-            
-            container.innerHTML = data.map(tk => `
-                <div class="glass-card p-6 border-l-4 ${tk.leido ? 'border-zinc-700 opacity-50' : 'border-amber-500'}">
-                    <div class="flex justify-between mb-4">
-                        <h5 class="font-bold text-amber-500 text-sm uppercase">${tk.asunto}</h5>
-                        <span class="text-[10px] text-zinc-600 font-mono">${new Date(tk.created_at).toLocaleString()}</span>
-                    </div>
-                    <p class="text-sm text-zinc-300 leading-relaxed mb-6">${tk.mensaje}</p>
-                    <button onclick="markLeido('${tk.id}')" class="text-[10px] font-black uppercase text-zinc-500 hover:text-white transition">Marcar como leído</button>
+        document.getElementById('auth-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('auth-email').value;
+            const pass = document.getElementById('auth-pass').value;
+
+            if (isLogin) {
+                const { error } = await _supa.auth.signInWithPassword({ email, password: pass });
+                if (error) alert(error.message); else location.reload();
+            } else {
+                const name = document.getElementById('reg-name').value;
+                const { data, error } = await _supa.auth.signUp({ email, password: pass });
+                if (error) return alert(error.message);
+                await _supa.from('perfiles').insert({ id: data.user.id, nombre: name.toUpperCase(), avatar_url: selAvatar });
+                location.reload();
+            }
+        };
+
+        async function loadProfile() {
+            const { data } = await _supa.from('perfiles').select('*').eq('id', userSession.user.id).single();
+            if (data) {
+                document.getElementById('u-name').innerText = data.nombre;
+                document.getElementById('u-xp').innerText = `XP: ${data.xp} | WINS: ${data.victorias}`;
+                document.getElementById('app-container').classList.remove('hidden');
+            }
+        }
+
+        // --- NAVEGACIÓN Y VISTAS ---
+        function nav(id) {
+            document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active'));
+            document.getElementById('view-' + id).classList.add('active');
+            if(id === 'torneos') loadTorneos();
+            if(id === 'ranking') loadRanking();
+            if(id === 'admin') loadAdminData();
+        }
+
+        async function loadTorneos() {
+            const { data } = await _supa.from('torneos').select('*');
+            document.getElementById('torneos-list').innerHTML = (data || []).map(t => `
+                <div class="glass p-6 rounded-3xl border-l-2 border-cyan-500">
+                    <p class="text-[9px] text-zinc-500 uppercase font-bold">${t.juego}</p>
+                    <h4 class="font-orbitron text-lg font-black uppercase mb-4">${t.nombre}</h4>
+                    <p class="text-xs text-cyan-400 font-bold mb-6">${t.inscritos}/${t.capacidad} JUGADORES</p>
+                    <button class="w-full btn-cyber !py-2">Unirse</button>
                 </div>
             `).join('');
         }
 
-        async function markLeido(id) {
-            await _supa.from('tickets_soporte').update({leido: true}).eq('id', id);
-            loadSupport();
+        async function loadRanking() {
+            const { data } = await _supa.from('perfiles').select('*').order('xp', {ascending: false});
+            document.getElementById('ranking-list').innerHTML = (data || []).map((u, i) => `
+                <div class="glass p-4 rounded-2xl flex items-center justify-between border border-white/5">
+                    <div class="flex items-center gap-4">
+                        <span class="font-orbitron text-cyan-500">#${i+1}</span>
+                        <img src="${u.avatar_url}" class="w-8 h-8 rounded-lg bg-black">
+                        <span class="font-bold text-xs uppercase">${u.nombre}</span>
+                    </div>
+                    <span class="font-orbitron text-xs text-white">${u.xp} XP</span>
+                </div>
+            `).join('');
         }
 
-        // --- COMANDOS MASIVOS ---
-        async function massXP() {
-            if(confirm("¿PREMIAR A TODOS LOS JUGADORES CON 1000 XP?")) {
-                const { data } = await _supa.from('perfiles').select('id, xp');
-                for(let u of data) {
-                    await _supa.from('perfiles').update({xp: u.xp + 1000}).eq('id', u.id);
-                }
-                alert("CARGA MASIVA FINALIZADA");
-                loadUsers();
+        // --- FUNCIONES ADMIN ---
+        async function loadAdminData() {
+            const { data: users } = await _supa.from('perfiles').select('*');
+            document.getElementById('admin-user-list').innerHTML = (users || []).map(u => `
+                <div class="flex items-center justify-between bg-black/40 p-3 rounded-xl border border-white/5">
+                    <span class="text-[10px] font-bold uppercase">${u.nombre}</span>
+                    <button onclick="editUser('${u.id}', ${u.xp})" class="text-[9px] text-red-500 font-bold border border-red-500/20 px-2 py-1 rounded">EDITAR XP</button>
+                </div>
+            `).join('');
+        }
+
+        async function editUser(id, xp) {
+            const newXp = prompt("Ingresa nuevo XP:", xp);
+            if(newXp) {
+                await _supa.from('perfiles').update({ xp: parseInt(newXp) }).eq('id', id);
+                loadAdminData();
             }
         }
 
-        async function resetArenas() {
-            if(confirm("¡ATENCIÓN! ESTO BORRARÁ TODOS LOS TORNEOS. ¿ESTÁS SEGURO?")) {
-                await _supa.from('torneos').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-                loadTourneys();
-            }
-        }
+        document.getElementById('form-torneo').onsubmit = async (e) => {
+            e.preventDefault();
+            const { error } = await _supa.from('torneos').insert({
+                nombre: document.getElementById('t-nombre').value.toUpperCase(),
+                juego: document.getElementById('t-juego').value,
+                capacidad: parseInt(document.getElementById('t-cap').value),
+                inscritos: 0
+            });
+            if(!error) { alert("TORNEO CREADO"); e.target.reset(); }
+        };
 
-        // CARGA INICIAL
-        loadUsers();
+        async function logout() { await _supa.auth.signOut(); location.reload(); }
     </script>
 </body>
 </html>
