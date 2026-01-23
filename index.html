@@ -3,160 +3,235 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARENA NEON | MODO COMANDANTE</title>
+    <title>NEON ARENA | CONSOLA DE MANDO v4.0</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #f59e0b; --dark: #02040a; }
+        :root { --gold: #f59e0b; --red: #ff4d4d; --dark: #02040a; --glass: rgba(15, 23, 42, 0.95); }
         body { background: var(--dark); color: white; font-family: 'Rajdhani', sans-serif; margin: 0; overflow: hidden; }
         .font-orbitron { font-family: 'Orbitron', sans-serif; }
-        .glass { background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(10px); }
         
-        /* Navegación */
-        .sidebar-item { width: 100%; text-align: left; padding: 15px 25px; font-size: 11px; font-weight: 800; text-transform: uppercase; border-left: 4px solid transparent; transition: 0.3s; }
-        .sidebar-item.active { background: rgba(245, 158, 11, 0.1); border-left-color: var(--gold); color: var(--gold); }
+        /* Estética Cyberpunk Admin */
+        .sidebar { background: #05070a; border-right: 1px solid rgba(245, 158, 11, 0.2); position: relative; }
+        .sidebar::after { content: ''; position: absolute; top: 0; right: 0; width: 2px; height: 100%; background: linear-gradient(to bottom, transparent, var(--gold), transparent); }
         
-        /* Secciones */
-        .view-section { display: none; height: 100vh; overflow-y: auto; padding: 40px; }
-        .view-section.active { display: block; }
+        .nav-link { width: 100%; text-align: left; padding: 18px 25px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; border-left: 0px solid var(--gold); }
+        .nav-link.active { background: rgba(245, 158, 11, 0.1); border-left-width: 5px; color: var(--gold); }
+        
+        .main-content { height: 100vh; overflow-y: auto; padding: 40px; scroll-behavior: smooth; }
+        .view-pane { display: none; animation: slideUp 0.4s ease-out; }
+        .view-pane.active { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Tablas y Inputs */
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { text-align: left; font-size: 10px; color: #64748b; padding: 12px; border-bottom: 2px solid #1e293b; text-transform: uppercase; }
-        td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
-        input { background: #000; border: 1px solid #334155; color: white; padding: 6px; border-radius: 4px; width: 80px; }
+        /* Componentes de Datos */
+        .data-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 15px; transition: 0.3s; }
+        .data-card:hover { border-color: var(--gold); background: rgba(245, 158, 11, 0.05); }
         
-        .btn-gold { background: var(--gold); color: black; font-family: 'Orbitron'; font-weight: 900; font-size: 10px; padding: 10px 20px; border-radius: 4px; transition: 0.3s; }
-        .btn-gold:hover { transform: scale(1.05); box-shadow: 0 0 15px rgba(245, 158, 11, 0.4); }
+        input, select { background: #000 !important; border: 1px solid #334155 !important; color: white !important; padding: 8px 12px; border-radius: 6px; font-size: 13px; }
+        input:focus { border-color: var(--gold) !important; outline: none; }
+
+        .action-btn { background: var(--gold); color: black; font-family: 'Orbitron'; font-weight: 900; font-size: 10px; padding: 10px 20px; border-radius: 5px; cursor: pointer; text-transform: uppercase; }
+        .btn-danger { background: var(--red); color: white; }
+        
+        /* Scrollbar Personalizada */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #02040a; }
+        ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
     </style>
 </head>
 <body>
 
     <div class="flex h-screen">
-        <aside class="w-72 glass border-r border-white/10 flex flex-col">
-            <div class="p-8 border-b border-white/5">
-                <h1 class="font-orbitron text-2xl font-black italic">ARENA<span class="text-amber-500">ADMIN</span></h1>
-                <p class="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mt-1">Acceso Directo Activado</p>
+        <aside class="w-80 sidebar flex flex-col">
+            <div class="p-10 border-b border-white/5">
+                <h1 class="font-orbitron text-2xl font-black italic tracking-tighter text-white">COMMAND<br><span class="text-amber-500">CENTER</span></h1>
+                <div class="flex items-center gap-2 mt-4">
+                    <div class="w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
+                    <span class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Sincronizado con Supabase</span>
+                </div>
             </div>
             
-            <nav class="flex-1 py-4">
-                <button onclick="changeSection('users')" id="btn-users" class="sidebar-item active">👤 Gestión Guerreros</button>
-                <button onclick="changeSection('tourneys')" id="btn-tourneys" class="sidebar-item">⚔️ Control de Arenas</button>
-                <button onclick="changeSection('tickets')" id="btn-tickets" class="sidebar-item">📩 Bandeja de Soporte</button>
+            <nav class="flex-1 py-6">
+                <button onclick="changeTab('users')" id="tab-users" class="nav-link active">👥 Gestión de Guerreros</button>
+                <button onclick="changeTab('tourneys')" id="tab-tourneys" class="nav-link">⚔️ Control de Arenas</button>
+                <button onclick="changeTab('support')" id="tab-support" class="nav-link">📩 Centro de Soporte</button>
+                <button onclick="changeTab('system')" id="tab-system" class="nav-link">⚙️ Ajustes Globales</button>
             </nav>
 
-            <div class="p-6 border-t border-white/5 bg-amber-500/5">
-                <p class="text-[9px] text-amber-500 font-black mb-2 uppercase">Conexión Segura</p>
-                <button onclick="window.location.href='index.html'" class="text-[10px] text-zinc-400 font-bold hover:text-white uppercase tracking-tighter">Cerrar Consola</button>
+            <div class="p-8 border-t border-white/5">
+                <button onclick="window.location.href='index.html'" class="w-full border border-zinc-700 text-zinc-500 py-3 rounded-lg text-[10px] font-black uppercase hover:border-white hover:text-white transition">Salir al Interfaz Usuario</button>
             </div>
         </aside>
 
-        <main class="flex-1 relative">
+        <main class="flex-1 main-content bg-[#02040a]">
             
-            <section id="sec-users" class="view-section active">
-                <div class="flex justify-between items-end mb-8">
+            <section id="view-users" class="view-pane active">
+                <div class="flex justify-between items-end mb-10">
                     <div>
-                        <h2 class="font-orbitron text-3xl font-black">DATOS_GUERREROS</h2>
-                        <p class="text-zinc-500 text-xs font-bold uppercase mt-1">Edita XP y Victorias en tiempo real</p>
+                        <h2 class="font-orbitron text-4xl font-black mb-2">GUERREROS</h2>
+                        <p class="text-zinc-500 font-bold uppercase text-xs tracking-widest">Base de datos de perfiles activos</p>
                     </div>
-                    <button onclick="loadUsers()" class="btn-gold">Refrescar Lista</button>
+                    <div class="flex gap-4">
+                        <input type="text" id="userSearch" onkeyup="filterUsers()" placeholder="BUSCAR GUERRERO..." class="w-64">
+                        <button onclick="loadUsers()" class="action-btn">Actualizar</button>
+                    </div>
                 </div>
 
-                <div class="glass rounded-2xl overflow-hidden">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Guerrero</th>
-                                <th>XP (Experiencia)</th>
-                                <th>Victorias</th>
-                                <th>Permisos</th>
-                                <th>Estado</th>
-                                <th>Acción</th>
+                <div class="data-card overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead class="bg-white/5">
+                            <tr class="text-[10px] font-black text-zinc-500 uppercase">
+                                <th class="p-5">Perfil</th>
+                                <th class="p-5">XP Global</th>
+                                <th class="p-5">Victorias</th>
+                                <th class="p-5">Rol</th>
+                                <th class="p-5">Estado</th>
+                                <th class="p-5 text-right">Mando</th>
                             </tr>
                         </thead>
-                        <tbody id="users-body">
+                        <tbody id="user-table-body">
                             </tbody>
                     </table>
                 </div>
             </section>
 
-            <section id="sec-tourneys" class="view-section">
+            <section id="view-tourneys" class="view-pane">
                 <div class="flex justify-between items-center mb-10">
-                    <h2 class="font-orbitron text-3xl font-black uppercase">Control_Torneos</h2>
-                    <button onclick="openTModal()" class="btn-gold">Publicar Nuevo Torneo</button>
+                    <div>
+                        <h2 class="font-orbitron text-4xl font-black mb-2">ARENAS</h2>
+                        <p class="text-zinc-500 font-bold uppercase text-xs tracking-widest">Despliegue de torneos activos</p>
+                    </div>
+                    <button onclick="openModal('tourney-modal')" class="action-btn">+ Crear Nueva Arena</button>
                 </div>
-                <div id="tourneys-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <div id="tourney-list-admin" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     </div>
             </section>
 
-            <section id="sec-tickets" class="view-section">
-                <h2 class="font-orbitron text-3xl font-black mb-10 uppercase">Soporte_Técnico</h2>
-                <div id="tickets-list" class="space-y-4 max-w-3xl">
+            <section id="view-support" class="view-pane">
+                <h2 class="font-orbitron text-4xl font-black mb-10">TICKETS_RECIBIDOS</h2>
+                <div id="support-list-admin" class="space-y-4 max-w-4xl">
                     </div>
+            </section>
+
+            <section id="view-system" class="view-pane">
+                <h2 class="font-orbitron text-4xl font-black mb-10">SISTEMA_GLOBAL</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="data-card p-8 border-l-4 border-amber-500">
+                        <h4 class="font-orbitron font-black mb-4">MANDO MASIVO</h4>
+                        <p class="text-xs text-zinc-500 mb-6 uppercase">Estas acciones afectan a todos los usuarios de la base de datos simultáneamente.</p>
+                        <div class="space-y-4">
+                            <button onclick="massUpdateXP()" class="w-full bg-white/5 hover:bg-white/10 p-4 rounded text-xs font-bold text-left flex justify-between items-center">
+                                <span>+500 XP A TODOS LOS GUERREROS</span>
+                                <span class="text-amber-500">EJECUTAR</span>
+                            </button>
+                            <button onclick="resetAllWins()" class="w-full bg-white/5 hover:bg-white/10 p-4 rounded text-xs font-bold text-left flex justify-between items-center">
+                                <span>RESETEAR VICTORIAS (NUEVA TEMPORADA)</span>
+                                <span class="text-amber-500">EJECUTAR</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="data-card p-8 border-l-4 border-red-500">
+                        <h4 class="font-orbitron font-black mb-4">LIMPIEZA DE DATOS</h4>
+                        <p class="text-xs text-zinc-500 mb-6 uppercase">Borrado permanente de registros antiguos.</p>
+                        <button onclick="deleteAllTourneys()" class="w-full btn-danger p-4 rounded text-xs font-black uppercase">Borrar Todas las Arenas (Reset)</button>
+                    </div>
+                </div>
             </section>
 
         </main>
     </div>
 
-    <div id="t-modal" class="fixed inset-0 bg-black/90 hidden items-center justify-center p-6 z-[2000]">
-        <div class="glass p-8 rounded-3xl w-full max-w-md border border-amber-500/30">
-            <h3 class="font-orbitron text-xl mb-6 text-amber-500">NUEVA ARENA DE BATALLA</h3>
-            <div class="space-y-4">
-                <input id="new-t-name" type="text" placeholder="NOMBRE DEL TORNEO" class="w-full !w-full">
-                <input id="new-t-game" type="text" placeholder="JUEGO (FREE FIRE, ETC)" class="w-full !w-full">
-                <div class="grid grid-cols-2 gap-4">
-                    <input id="new-t-cap" type="number" placeholder="CAPACIDAD" value="16" class="w-full !w-full">
-                    <input id="new-t-ins" type="number" placeholder="INSCRITOS" value="0" class="w-full !w-full">
+    <div id="tourney-modal" class="fixed inset-0 bg-black/95 z-[5000] hidden flex items-center justify-center p-6">
+        <div class="data-card glass p-10 w-full max-w-lg border-2 border-amber-500/50">
+            <h3 class="font-orbitron text-2xl font-black mb-8 text-amber-500">PROGRAMAR ARENA</h3>
+            <div class="space-y-5">
+                <div>
+                    <label class="text-[10px] font-bold text-zinc-500 uppercase block mb-2">Nombre del Evento</label>
+                    <input id="mt-name" type="text" placeholder="EJ: TORNEO RELÁMPAGO" class="w-full !w-full">
                 </div>
-                <div class="flex gap-4 pt-4">
-                    <button onclick="createTournament()" class="flex-1 btn-gold">Publicar</button>
-                    <button onclick="closeTModal()" class="flex-1 text-xs font-bold uppercase">Cerrar</button>
+                <div>
+                    <label class="text-[10px] font-bold text-zinc-500 uppercase block mb-2">Juego Base</label>
+                    <input id="mt-game" type="text" placeholder="EJ: FREE FIRE" class="w-full !w-full">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-[10px] font-bold text-zinc-500 uppercase block mb-2">Capacidad</label>
+                        <input id="mt-cap" type="number" value="16" class="w-full !w-full">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-zinc-500 uppercase block mb-2">Pre-Inscritos</label>
+                        <input id="mt-ins" type="number" value="0" class="w-full !w-full">
+                    </div>
+                </div>
+                <div class="flex gap-4 mt-10">
+                    <button onclick="saveNewTourney()" class="flex-1 action-btn">Lanzar Arena</button>
+                    <button onclick="closeModal('tourney-modal')" class="flex-1 text-xs font-black uppercase text-zinc-500">Abortar</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Configuración de Supabase
+        // CONEXIÓN
         const _supa = supabase.createClient('https://qxvqxdsfcvdmanxtzmkn.supabase.co', 'sb_publishable_X2_itSXVSMUgkZeDLSE3KQ_HxD1Jf07');
 
-        // Motor de navegación
-        function changeSection(sec) {
-            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
-            document.getElementById('sec-' + sec).classList.add('active');
-            document.getElementById('btn-' + sec).classList.add('active');
+        // NAVEGACIÓN
+        function changeTab(tabId) {
+            document.querySelectorAll('.view-pane').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+            document.getElementById('view-' + tabId).classList.add('active');
+            document.getElementById('tab-' + tabId).classList.add('active');
             
-            if(sec === 'users') loadUsers();
-            if(sec === 'tourneys') loadTourneys();
-            if(sec === 'tickets') loadTickets();
+            if(tabId === 'users') loadUsers();
+            if(tabId === 'tourneys') loadTourneys();
+            if(tabId === 'support') loadSupport();
         }
 
-        // --- GESTIÓN DE USUARIOS ---
-        async function loadUsers() {
-            const { data, error } = await _supa.from('perfiles').select('*').order('created_at', {ascending: false});
-            if(error) return console.log("Error:", error);
+        // MODALES
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-            const tbody = document.getElementById('users-body');
-            tbody.innerHTML = data.map(u => `
-                <tr class="hover:bg-white/5 transition">
-                    <td class="flex items-center gap-3">
-                        <img src="${u.avatar_url}" class="w-8 h-8 rounded-full border border-zinc-700">
-                        <span class="font-bold uppercase text-[12px]">${u.nombre}</span>
+        // --- LÓGICA DE USUARIOS ---
+        async function loadUsers() {
+            const { data } = await _supa.from('perfiles').select('*').order('xp', {ascending: false});
+            const container = document.getElementById('user-table-body');
+            container.innerHTML = data.map(u => `
+                <tr class="border-b border-white/5 hover:bg-white/5 transition">
+                    <td class="p-5 flex items-center gap-4">
+                        <img src="${u.avatar_url}" class="w-10 h-10 rounded-xl border border-white/10 shadow-lg">
+                        <div>
+                            <p class="font-bold text-sm uppercase tracking-tighter">${u.nombre}</p>
+                            <p class="text-[9px] text-zinc-600 font-mono">${u.id.slice(0,18)}...</p>
+                        </div>
                     </td>
-                    <td><input type="number" value="${u.xp}" onchange="updUser('${u.id}', 'xp', this.value)"></td>
-                    <td><input type="number" value="${u.victorias}" onchange="updUser('${u.id}', 'victorias', this.value)"></td>
-                    <td><button onclick="toggleAdmin('${u.id}', ${u.is_admin})" class="text-[10px] font-black ${u.is_admin ? 'text-amber-500' : 'text-zinc-600'}">${u.is_admin ? 'ADMIN' : 'USUARIO'}</button></td>
-                    <td><span class="text-[10px] font-black ${u.baneado ? 'text-red-500' : 'text-green-500'}">${u.baneado ? 'BANEADO' : 'ACTIVO'}</span></td>
-                    <td><button onclick="banUser('${u.id}', ${u.baneado})" class="text-[10px] font-bold text-zinc-500 hover:text-white uppercase">Cambiar Estado</button></td>
+                    <td class="p-5"><input type="number" value="${u.xp}" onchange="directUpdate('${u.id}', 'xp', this.value)" class="w-24"></td>
+                    <td class="p-5"><input type="number" value="${u.victorias}" onchange="directUpdate('${u.id}', 'victorias', this.value)" class="w-20"></td>
+                    <td class="p-5">
+                        <button onclick="toggleAdmin('${u.id}', ${u.is_admin})" class="text-[10px] font-black uppercase ${u.is_admin ? 'text-amber-500' : 'text-zinc-600'}">
+                            ${u.is_admin ? '● ADMIN' : '○ JUGADOR'}
+                        </button>
+                    </td>
+                    <td class="p-5">
+                        <span class="text-[10px] font-black uppercase ${u.baneado ? 'text-red-500' : 'text-green-500'}">
+                            ${u.baneado ? 'BLOQUEADO' : 'OPERATIVO'}
+                        </span>
+                    </td>
+                    <td class="p-5 text-right">
+                        <button onclick="toggleBan('${u.id}', ${u.baneado})" class="text-[9px] font-black uppercase p-2 border ${u.baneado ? 'border-green-500 text-green-500' : 'border-red-500 text-red-500'} rounded hover:bg-white hover:text-black transition">
+                            ${u.baneado ? 'REHABILITAR' : 'BANEAR'}
+                        </button>
+                    </td>
                 </tr>
             `).join('');
         }
 
-        async function updUser(id, field, val) {
-            const obj = {}; obj[field] = parseInt(val);
-            await _supa.from('perfiles').update(obj).eq('id', id);
+        async function directUpdate(id, field, val) {
+            const upd = {}; upd[field] = parseInt(val);
+            await _supa.from('perfiles').update(upd).eq('id', id);
         }
 
         async function toggleAdmin(id, current) {
@@ -164,67 +239,105 @@
             loadUsers();
         }
 
-        async function banUser(id, current) {
+        async function toggleBan(id, current) {
             await _supa.from('perfiles').update({baneado: !current}).eq('id', id);
             loadUsers();
         }
 
-        // --- GESTIÓN DE TORNEOS ---
-        function openTModal() { document.getElementById('t-modal').style.display = 'flex'; }
-        function closeTModal() { document.getElementById('t-modal').style.display = 'none'; }
-
-        async function createTournament() {
-            const n = document.getElementById('new-t-name').value;
-            const j = document.getElementById('new-t-game').value;
-            const c = document.getElementById('new-t-cap').value;
-            const i = document.getElementById('new-t-ins').value;
-            
-            const { error } = await _supa.from('torneos').insert({ nombre: n, juego: j, capacidad: c, inscritos: i });
-            if(!error) { closeTModal(); loadTourneys(); }
-        }
-
+        // --- LÓGICA DE TORNEOS ---
         async function loadTourneys() {
             const { data } = await _supa.from('torneos').select('*').order('created_at', {ascending: false});
-            document.getElementById('tourneys-grid').innerHTML = data.map(t => `
-                <div class="glass p-6 rounded-2xl border-t-2 border-amber-500">
-                    <h4 class="font-orbitron font-bold text-white mb-2 uppercase">${t.nombre}</h4>
-                    <p class="text-xs text-zinc-500 font-bold mb-4 uppercase">${t.juego} | ${t.inscritos}/${t.capacidad}</p>
-                    <button onclick="delT('${t.id}')" class="text-[9px] font-black text-red-500 hover:underline uppercase">Eliminar Arena</button>
+            const container = document.getElementById('tourney-list-admin');
+            container.innerHTML = data.map(t => `
+                <div class="data-card p-6 border-t-4 border-amber-500">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-[9px] bg-amber-500 text-black px-2 py-0.5 font-black uppercase rounded">${t.juego}</span>
+                        <button onclick="delT('${t.id}')" class="text-red-500 font-black hover:scale-125 transition">×</button>
+                    </div>
+                    <h4 class="font-orbitron font-bold text-lg mb-2 uppercase tracking-tighter">${t.nombre}</h4>
+                    <div class="flex justify-between text-[11px] font-bold text-zinc-500 mb-6">
+                        <span>ESTADO: ABIERTO</span>
+                        <span>${t.inscritos} / ${t.capacidad} JUGADORES</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="flex-1 py-2 bg-white/5 text-[9px] font-black uppercase rounded hover:bg-white hover:text-black transition">Editar</button>
+                        <button class="flex-1 py-2 bg-white/5 text-[9px] font-black uppercase rounded hover:bg-white hover:text-black transition">Finalizar</button>
+                    </div>
                 </div>
             `).join('');
         }
 
+        async function saveNewTourney() {
+            const n = document.getElementById('mt-name').value;
+            const j = document.getElementById('mt-game').value;
+            const c = document.getElementById('mt-cap').value;
+            const i = document.getElementById('mt-ins').value;
+            
+            if(!n || !j) return alert("LLENA LOS CAMPOS");
+
+            const { error } = await _supa.from('torneos').insert({
+                nombre: n.toUpperCase(), juego: j.toUpperCase(), capacidad: c, inscritos: i
+            });
+
+            if(!error) {
+                closeModal('tourney-modal');
+                loadTourneys();
+            }
+        }
+
         async function delT(id) {
-            if(confirm("¿ELIMINAR ESTE TORNEO DEFINITIVAMENTE?")) {
+            if(confirm("¿ELIMINAR ESTA ARENA?")) {
                 await _supa.from('torneos').delete().eq('id', id);
                 loadTourneys();
             }
         }
 
-        // --- GESTIÓN DE TICKETS ---
-        async function loadTickets() {
+        // --- LÓGICA DE SOPORTE ---
+        async function loadSupport() {
             const { data } = await _supa.from('tickets_soporte').select('*').order('created_at', {ascending: false});
-            const list = document.getElementById('tickets-list');
-            if(!data.length) { list.innerHTML = "<p class='text-zinc-500 uppercase text-xs'>Bandeja de entrada vacía.</p>"; return; }
+            const container = document.getElementById('support-list-admin');
+            if(!data.length) { container.innerHTML = "<p class='text-zinc-600 font-bold uppercase text-xs'>No hay reportes entrantes.</p>"; return; }
             
-            list.innerHTML = data.map(tk => `
-                <div class="glass p-5 rounded-xl border-l-4 ${tk.leido ? 'border-zinc-700 opacity-50' : 'border-amber-500'}">
-                    <div class="flex justify-between mb-2">
-                        <span class="text-xs font-black text-amber-500 uppercase">${tk.asunto}</span>
-                        <span class="text-[9px] text-zinc-600">${new Date(tk.created_at).toLocaleDateString()}</span>
+            container.innerHTML = data.map(tk => `
+                <div class="data-card p-6 border-l-4 ${tk.leido ? 'border-zinc-700 opacity-50' : 'border-amber-500'}">
+                    <div class="flex justify-between mb-4">
+                        <h5 class="font-bold text-amber-500 uppercase text-sm">${tk.asunto}</h5>
+                        <span class="text-[10px] text-zinc-600 font-mono">${new Date(tk.created_at).toLocaleString()}</span>
                     </div>
-                    <p class="text-sm text-zinc-300 mb-4">${tk.mensaje}</p>
-                    <button onclick="markRead('${tk.id}')" class="text-[9px] font-bold text-zinc-500 uppercase hover:text-white">Marcar como leído</button>
+                    <p class="text-sm text-zinc-300 mb-6 leading-relaxed">${tk.mensaje}</p>
+                    <div class="flex gap-4">
+                        <button onclick="markLeido('${tk.id}')" class="text-[10px] font-black uppercase text-zinc-500 hover:text-white">${tk.leido ? 'VISTO' : 'MARCAR COMO VISTO'}</button>
+                        <button class="text-[10px] font-black uppercase text-red-500 hover:underline">Borrar Reporte</button>
+                    </div>
                 </div>
             `).join('');
         }
 
-        async function markRead(id) {
+        async function markLeido(id) {
             await _supa.from('tickets_soporte').update({leido: true}).eq('id', id);
-            loadTickets();
+            loadSupport();
         }
 
-        // Iniciar con lista de usuarios
+        // --- COMANDOS MASIVOS ---
+        async function massUpdateXP() {
+            if(confirm("¿DAR 500 XP A TODOS LOS GUERREROS?")) {
+                const { data: users } = await _supa.from('perfiles').select('id, xp');
+                for(let u of users) {
+                    await _supa.from('perfiles').update({xp: u.xp + 500}).eq('id', u.id);
+                }
+                alert("ACTUALIZACIÓN MASIVA COMPLETADA");
+                loadUsers();
+            }
+        }
+
+        async function deleteAllTourneys() {
+            if(confirm("¡ATENCIÓN! ESTO BORRARÁ TODOS LOS TORNEOS. ¿CONTINUAR?")) {
+                await _supa.from('torneos').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+                loadTourneys();
+            }
+        }
+
+        // INICIO
         loadUsers();
     </script>
 </body>
