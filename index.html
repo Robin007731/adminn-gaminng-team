@@ -2,179 +2,108 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CMD CENTER | ADMIN NEON</title>
+    <title>CMD CENTER | ULTRA ADMIN</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
-        :root { --admin-gold: #fbbf24; --neon-cyan: #00f2ff; }
-        body { background: #06080c; color: white; font-family: 'Rajdhani', sans-serif; }
+        body { background: #020408; color: #e2e8f0; font-family: sans-serif; }
         .font-orbitron { font-family: 'Orbitron', sans-serif; }
-        .admin-card { background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(251, 191, 36, 0.2); backdrop-filter: blur(10px); }
-        .status-pill { padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase; }
-        .btn-gold { background: var(--admin-gold); color: black; font-weight: 900; transition: 0.3s; }
-        .btn-gold:hover { box-shadow: 0 0 20px var(--admin-gold); transform: scale(1.02); }
-        input, select, textarea { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 10px; border-radius: 4px; outline: none; }
-        input:focus { border-color: var(--admin-gold); }
+        .glass { background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255,255,255,0.05); }
+        .btn-action { transition: 0.2s; text-transform: uppercase; font-size: 10px; font-weight: bold; }
+        input, select { background: #000; border: 1px solid #334155; padding: 8px; border-radius: 4px; color: white; }
     </style>
 </head>
-<body class="p-8">
-
-    <header class="flex justify-between items-center mb-12 border-b border-yellow-500/20 pb-6">
-        <div>
-            <h1 class="font-orbitron text-2xl font-black text-yellow-500 tracking-tighter uppercase">Command_Center <span class="text-white text-xs block tracking-[0.5em]">Administrador de Arena</span></h1>
-        </div>
-        <div class="flex gap-4">
-            <div id="db-status" class="flex items-center gap-2 bg-green-500/10 text-green-500 px-4 py-2 rounded border border-green-500/20 text-xs font-bold">
-                <span class="h-2 w-2 bg-green-500 rounded-full animate-pulse"></span> DB_CONNECTED
-            </div>
-            <button onclick="location.reload()" class="bg-white/5 hover:bg-white/10 p-2 rounded">🔄</button>
+<body class="p-4 md:p-8">
+    <header class="mb-10 flex justify-between items-center border-b border-cyan-500/20 pb-6">
+        <h1 class="font-orbitron text-2xl text-cyan-400 italic">CORE_COMMAND_V2</h1>
+        <div class="flex gap-2">
+            <button onclick="globalAlert()" class="bg-red-600 px-4 py-2 rounded text-xs font-bold">🚨 ALERTA GLOBAL</button>
+            <button onclick="resetSeason()" class="bg-white/10 px-4 py-2 rounded text-xs font-bold hover:bg-red-900">RESET TEMP</button>
         </div>
     </header>
 
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        
-        <div class="lg:col-span-1 space-y-6">
-            <div class="admin-card p-6 rounded-xl">
-                <h3 class="font-orbitron text-sm mb-6 text-yellow-500 italic">Crear_Nuevo_Desafío</h3>
-                <div class="flex flex-col gap-3">
-                    <input id="t-nombre" type="text" placeholder="Nombre del Torneo">
-                    <select id="t-juego">
-                        <option value="Valorant">Valorant</option>
-                        <option value="Wild Rift">Wild Rift</option>
-                        <option value="Free Fire">Free Fire</option>
-                        <option value="LoL">League of Legends</option>
-                    </select>
-                    <input id="t-cupos" type="number" placeholder="Cupos (Ej: 16)">
-                    <button onclick="crearTorneo()" class="btn-gold py-3 text-xs uppercase mt-2">Publicar en Arena</button>
-                </div>
-            </div>
-
-            <div class="admin-card p-6 rounded-xl">
-                <h3 class="font-orbitron text-sm mb-4 text-yellow-500 italic">Anuncio_Global</h3>
-                <textarea id="n-texto" placeholder="Mensaje para el Hero de los clientes..." class="w-full text-xs"></textarea>
-                <button onclick="publicarNoticia()" class="w-full bg-white text-black py-2 mt-2 font-bold text-xs uppercase">Actualizar Hero</button>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 glass p-6 rounded-xl">
+            <h2 class="font-orbitron text-sm mb-4 text-cyan-500">CONTROL_DE_GUERREROS</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="text-zinc-500 border-b border-white/5">
+                        <tr>
+                            <th class="p-2">Usuario</th>
+                            <th class="p-2">Estado</th>
+                            <th class="p-2">Acciones Rápidas</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-table"></tbody>
+                </table>
             </div>
         </div>
 
-        <div class="lg:col-span-2 space-y-6">
-            <div class="admin-card p-6 rounded-xl min-h-[400px]">
-                <h3 class="font-orbitron text-sm mb-6 text-cyan-400 italic">Base_de_Guerreros</h3>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs">
-                        <thead class="text-zinc-500 uppercase border-b border-white/5">
-                            <tr>
-                                <th class="pb-4">Guerrero</th>
-                                <th class="pb-4 text-center">XP</th>
-                                <th class="pb-4 text-center">Wins</th>
-                                <th class="pb-4 text-right">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="lista-usuarios">
-                            </tbody>
-                    </table>
+        <div class="space-y-6">
+            <div class="glass p-6 rounded-xl">
+                <h2 class="font-orbitron text-sm mb-4 text-pink-500">ESTABLECER_TORNEO</h2>
+                <div class="flex flex-col gap-2">
+                    <input id="t-name" placeholder="Nombre Torneo">
+                    <input id="t-game" placeholder="Juego (Ej: Valorant)">
+                    <input id="t-slots" type="number" placeholder="Cupos">
+                    <button onclick="addTournament()" class="bg-cyan-500 text-black py-2 font-black text-xs">LANZAR</button>
                 </div>
             </div>
 
-            <div class="admin-card p-6 rounded-xl">
-                <h3 class="font-orbitron text-sm mb-6 text-pink-500 italic">Tickets_Soporte_Pendientes</h3>
-                <div id="lista-tickets" class="space-y-3">
-                    </div>
-            </div>
-        </div>
-
-        <div class="lg:col-span-1">
-            <div class="admin-card p-6 rounded-xl">
-                <h3 class="font-orbitron text-sm mb-6 text-yellow-500 italic">Resumen_Operativo</h3>
-                <div class="space-y-4">
-                    <div class="flex justify-between items-center border-b border-white/5 pb-2">
-                        <span class="text-xs text-zinc-400">Torneos Activos</span>
-                        <span id="stat-torneos" class="font-orbitron text-lg text-cyan-400">0</span>
-                    </div>
-                    <div class="flex justify-between items-center border-b border-white/5 pb-2">
-                        <span class="text-xs text-zinc-400">Total Usuarios</span>
-                        <span id="stat-users" class="font-orbitron text-lg text-white">0</span>
-                    </div>
-                </div>
+            <div class="glass p-6 rounded-xl">
+                <h2 class="font-orbitron text-sm mb-4 text-yellow-500">SOPORTE_INBOX</h2>
+                <div id="ticket-list" class="space-y-2"></div>
             </div>
         </div>
     </div>
 
     <script>
-        const _supa = supabase.createClient('https://qxvqxdsfcvdmanxtzmkn.supabase.co', 'sb_publishable_X2_itSXVSMUgkZeDLSE3KQ_HxD1Jf07');
+        const _supa = supabase.createClient('URL', 'KEY');
 
-        // --- FUNCIONES DE GESTIÓN ---
-        async function crearTorneo() {
-            const nombre = document.getElementById('t-nombre').value;
-            const juego = document.getElementById('t-juego').value;
-            const capacidad = document.getElementById('t-cupos').value;
-
-            const { error } = await _supa.from('torneos').insert({ nombre, juego, capacidad });
-            if(!error) { alert("TORNEO LANZADO A LA RED"); location.reload(); }
-        }
-
-        async function cargarUsuarios() {
-            const { data } = await _supa.from('perfiles').select('*').order('xp', { ascending: false });
-            const tbody = document.getElementById('lista-usuarios');
-            tbody.innerHTML = data.map(u => `
+        async function loadUsers() {
+            const { data } = await _supa.from('perfiles').select('*').order('xp', {ascending: false});
+            document.getElementById('user-table').innerHTML = data.map(u => `
                 <tr class="border-b border-white/5">
-                    <td class="py-4 flex items-center gap-2">
-                        <img src="${u.avatar_url}" class="w-6 h-6 rounded-full">
-                        <span>${u.nombre}</span>
-                    </td>
-                    <td class="text-center text-cyan-400 font-bold">${u.xp}</td>
-                    <td class="text-center text-pink-500 font-bold">${u.victorias}</td>
-                    <td class="text-right">
-                        <button onclick="modificarXP('${u.id}', ${u.xp + 100})" class="bg-cyan-500/20 text-cyan-400 p-1 rounded text-[8px] font-bold">+100 XP</button>
-                        <button onclick="modificarVictoria('${u.id}', ${u.victorias + 1})" class="bg-pink-500/20 text-pink-500 p-1 rounded text-[8px] font-bold">+WIN</button>
+                    <td class="p-2">${u.nombre} <span class="block text-[9px] text-zinc-500">${u.xp} XP</span></td>
+                    <td class="p-2">${u.baneado ? '🔴 BANEADO' : '🟢 ACTIVO'}</td>
+                    <td class="p-2 flex gap-1">
+                        <button onclick="banUser('${u.id}', ${!u.baneado})" class="bg-zinc-800 p-1 rounded text-[8px]">${u.baneado ? 'UNBAN' : 'BAN'}</button>
+                        <button onclick="giveXP('${u.id}', ${u.xp + 500})" class="bg-cyan-900 p-1 rounded text-[8px]">+500XP</button>
                     </td>
                 </tr>
             `).join('');
-            document.getElementById('stat-users').innerText = data.length;
         }
 
-        async function modificarXP(id, total) {
-            await _supa.from('perfiles').update({ xp: total }).eq('id', id);
-            cargarUsuarios();
+        async function banUser(id, status) {
+            await _supa.from('perfiles').update({ baneado: status }).eq('id', id);
+            loadUsers();
         }
 
-        async function modificarVictoria(id, total) {
-            await _supa.from('perfiles').update({ victorias: total, xp: total * 1000 }).eq('id', id);
-            cargarUsuarios();
+        async function globalAlert() {
+            const msg = prompt("Mensaje de alerta para todos los usuarios:");
+            if(msg) await _supa.from('alertas_globales').insert({ mensaje: msg });
         }
 
-        async function cargarTickets() {
+        async function addTournament() {
+            const nombre = document.getElementById('t-name').value;
+            const juego = document.getElementById('t-game').value;
+            const capacidad = document.getElementById('t-slots').value;
+            await _supa.from('torneos').insert({ nombre, juego, capacidad });
+            alert("TORNEO CREADO");
+        }
+
+        async function loadTickets() {
             const { data } = await _supa.from('tickets_soporte').select('*, perfiles(nombre)').eq('estado', 'PENDIENTE');
-            const box = document.getElementById('lista-tickets');
-            box.innerHTML = data.map(t => `
-                <div class="bg-black/40 p-4 border border-white/5 rounded">
-                    <div class="flex justify-between mb-2">
-                        <span class="text-[9px] font-black text-yellow-500 uppercase">${t.perfiles.nombre}</span>
-                        <span class="text-[8px] text-zinc-600">${new Date(t.created_at).toLocaleDateString()}</span>
-                    </div>
-                    <p class="text-[10px] font-bold mb-3">${t.asunto}: ${t.mensaje}</p>
-                    <button onclick="resolverTicket(${t.id})" class="text-[8px] bg-green-500 text-black px-3 py-1 font-black uppercase rounded">Marcar Resuelto</button>
+            document.getElementById('ticket-list').innerHTML = data.map(t => `
+                <div class="text-[10px] bg-white/5 p-2 rounded">
+                    <b>${t.perfiles.nombre}:</b> ${t.mensaje}
+                    <button onclick="closeTicket(${t.id})" class="block text-cyan-400 mt-1">CERRAR ✓</button>
                 </div>
             `).join('');
         }
 
-        async function resolverTicket(id) {
-            await _supa.from('tickets_soporte').update({ estado: 'RESUELTO' }).eq('id', id);
-            cargarTickets();
-        }
-
-        async function publicarNoticia() {
-            const contenido = document.getElementById('n-texto').value;
-            await _supa.from('noticias').insert({ contenido });
-            alert("AVISO PUBLICADO");
-        }
-
-        // Inicializar
-        cargarUsuarios();
-        cargarTickets();
-        _supa.from('torneos').select('*').then(({data}) => document.getElementById('stat-torneos').innerText = data.length);
-
+        loadUsers(); loadTickets();
     </script>
 </body>
 </html>
