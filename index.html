@@ -3,202 +3,229 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARENA NEON | CONTROL TOTAL</title>
+    <title>ARENA NEON | MODO COMANDANTE</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        body { background: #02040a; color: white; font-family: 'Rajdhani', sans-serif; }
+        :root { --gold: #f59e0b; --dark: #02040a; }
+        body { background: var(--dark); color: white; font-family: 'Rajdhani', sans-serif; margin: 0; overflow: hidden; }
         .font-orbitron { font-family: 'Orbitron', sans-serif; }
         .glass { background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(10px); }
-        .nav-item { width: 100%; text-align: left; padding: 15px 25px; font-size: 11px; font-weight: 800; text-transform: uppercase; transition: 0.3s; }
-        .nav-item.active { border-left: 4px solid #f59e0b; color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
-        .view { display: none; padding: 30px; }
-        .view.active { display: block; }
-        input { background: #000; border: 1px solid #334155; color: white; padding: 5px; border-radius: 4px; }
+        
+        /* Navegación */
+        .sidebar-item { width: 100%; text-align: left; padding: 15px 25px; font-size: 11px; font-weight: 800; text-transform: uppercase; border-left: 4px solid transparent; transition: 0.3s; }
+        .sidebar-item.active { background: rgba(245, 158, 11, 0.1); border-left-color: var(--gold); color: var(--gold); }
+        
+        /* Secciones */
+        .view-section { display: none; height: 100vh; overflow-y: auto; padding: 40px; }
+        .view-section.active { display: block; }
+
+        /* Tablas y Inputs */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { text-align: left; font-size: 10px; color: #64748b; padding: 12px; border-bottom: 2px solid #1e293b; text-transform: uppercase; }
+        td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
+        input { background: #000; border: 1px solid #334155; color: white; padding: 6px; border-radius: 4px; width: 80px; }
+        
+        .btn-gold { background: var(--gold); color: black; font-family: 'Orbitron'; font-weight: 900; font-size: 10px; padding: 10px 20px; border-radius: 4px; transition: 0.3s; }
+        .btn-gold:hover { transform: scale(1.05); box-shadow: 0 0 15px rgba(245, 158, 11, 0.4); }
     </style>
 </head>
 <body>
 
-    <div id="lock-screen" class="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center p-6">
-        <div id="loader-icon" class="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <h2 id="lock-status" class="font-orbitron text-lg text-amber-500 animate-pulse">SISTEMA DE SEGURIDAD ACTIVADO</h2>
-        <p id="lock-detail" class="text-zinc-500 text-xs mt-2 uppercase tracking-widest">Verificando nivel de acceso...</p>
-        <button id="emergency-exit" onclick="window.location.href='index.html'" class="hidden mt-8 text-red-500 text-[10px] font-bold border border-red-500/30 px-4 py-2 rounded">CANCELAR Y VOLVER</button>
-    </div>
-
-    <div class="flex min-h-screen">
-        <aside class="w-64 glass border-r border-white/10">
+    <div class="flex h-screen">
+        <aside class="w-72 glass border-r border-white/10 flex flex-col">
             <div class="p-8 border-b border-white/5">
-                <h1 class="font-orbitron text-xl font-black">ADMIN<span class="text-amber-500">_NEON</span></h1>
+                <h1 class="font-orbitron text-2xl font-black italic">ARENA<span class="text-amber-500">ADMIN</span></h1>
+                <p class="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mt-1">Acceso Directo Activado</p>
             </div>
-            <nav class="mt-4">
-                <button onclick="showView('users')" id="n-users" class="nav-item active">👤 Usuarios</button>
-                <button onclick="showView('tourneys')" id="n-tourneys" class="nav-item">⚔️ Torneos</button>
-                <button onclick="showView('tickets')" id="n-tickets" class="nav-item">📩 Tickets</button>
+            
+            <nav class="flex-1 py-4">
+                <button onclick="changeSection('users')" id="btn-users" class="sidebar-item active">👤 Gestión Guerreros</button>
+                <button onclick="changeSection('tourneys')" id="btn-tourneys" class="sidebar-item">⚔️ Control de Arenas</button>
+                <button onclick="changeSection('tickets')" id="btn-tickets" class="sidebar-item">📩 Bandeja de Soporte</button>
             </nav>
+
+            <div class="p-6 border-t border-white/5 bg-amber-500/5">
+                <p class="text-[9px] text-amber-500 font-black mb-2 uppercase">Conexión Segura</p>
+                <button onclick="window.location.href='index.html'" class="text-[10px] text-zinc-400 font-bold hover:text-white uppercase tracking-tighter">Cerrar Consola</button>
+            </div>
         </aside>
 
-        <main class="flex-1 overflow-y-auto">
-            <section id="v-users" class="view active">
-                <h3 class="font-orbitron text-2xl mb-6 uppercase">Base de Datos</h3>
-                <div class="glass rounded-xl p-4">
-                    <table class="w-full text-left">
+        <main class="flex-1 relative">
+            
+            <section id="sec-users" class="view-section active">
+                <div class="flex justify-between items-end mb-8">
+                    <div>
+                        <h2 class="font-orbitron text-3xl font-black">DATOS_GUERREROS</h2>
+                        <p class="text-zinc-500 text-xs font-bold uppercase mt-1">Edita XP y Victorias en tiempo real</p>
+                    </div>
+                    <button onclick="loadUsers()" class="btn-gold">Refrescar Lista</button>
+                </div>
+
+                <div class="glass rounded-2xl overflow-hidden">
+                    <table>
                         <thead>
-                            <tr class="text-zinc-500 text-[10px] uppercase">
-                                <th class="p-2">Usuario</th>
-                                <th class="p-2">XP</th>
-                                <th class="p-2">Wins</th>
-                                <th class="p-2">Admin</th>
-                                <th class="p-2">Acción</th>
+                            <tr>
+                                <th>Guerrero</th>
+                                <th>XP (Experiencia)</th>
+                                <th>Victorias</th>
+                                <th>Permisos</th>
+                                <th>Estado</th>
+                                <th>Acción</th>
                             </tr>
                         </thead>
-                        <tbody id="user-list"></tbody>
+                        <tbody id="users-body">
+                            </tbody>
                     </table>
                 </div>
             </section>
 
-            <section id="v-tourneys" class="view">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="font-orbitron text-2xl uppercase">Torneos</h3>
-                    <button onclick="createNewTourney()" class="bg-amber-500 text-black font-bold px-4 py-2 rounded text-xs">NUEVA ARENA</button>
+            <section id="sec-tourneys" class="view-section">
+                <div class="flex justify-between items-center mb-10">
+                    <h2 class="font-orbitron text-3xl font-black uppercase">Control_Torneos</h2>
+                    <button onclick="openTModal()" class="btn-gold">Publicar Nuevo Torneo</button>
                 </div>
-                <div id="tourney-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                <div id="tourneys-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    </div>
             </section>
 
-            <section id="v-tickets" class="view">
-                <h3 class="font-orbitron text-2xl mb-6 uppercase">Soporte</h3>
-                <div id="ticket-list" class="space-y-4"></div>
+            <section id="sec-tickets" class="view-section">
+                <h2 class="font-orbitron text-3xl font-black mb-10 uppercase">Soporte_Técnico</h2>
+                <div id="tickets-list" class="space-y-4 max-w-3xl">
+                    </div>
             </section>
+
         </main>
     </div>
 
+    <div id="t-modal" class="fixed inset-0 bg-black/90 hidden items-center justify-center p-6 z-[2000]">
+        <div class="glass p-8 rounded-3xl w-full max-w-md border border-amber-500/30">
+            <h3 class="font-orbitron text-xl mb-6 text-amber-500">NUEVA ARENA DE BATALLA</h3>
+            <div class="space-y-4">
+                <input id="new-t-name" type="text" placeholder="NOMBRE DEL TORNEO" class="w-full !w-full">
+                <input id="new-t-game" type="text" placeholder="JUEGO (FREE FIRE, ETC)" class="w-full !w-full">
+                <div class="grid grid-cols-2 gap-4">
+                    <input id="new-t-cap" type="number" placeholder="CAPACIDAD" value="16" class="w-full !w-full">
+                    <input id="new-t-ins" type="number" placeholder="INSCRITOS" value="0" class="w-full !w-full">
+                </div>
+                <div class="flex gap-4 pt-4">
+                    <button onclick="createTournament()" class="flex-1 btn-gold">Publicar</button>
+                    <button onclick="closeTModal()" class="flex-1 text-xs font-bold uppercase">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Configuración de Supabase
         const _supa = supabase.createClient('https://qxvqxdsfcvdmanxtzmkn.supabase.co', 'sb_publishable_X2_itSXVSMUgkZeDLSE3KQ_HxD1Jf07');
 
-        // --- SISTEMA DE SEGURIDAD REFORZADO ---
-        async function runSecurityCheck() {
-            const detail = document.getElementById('lock-detail');
-            const exitBtn = document.getElementById('emergency-exit');
+        // Motor de navegación
+        function changeSection(sec) {
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+            document.getElementById('sec-' + sec).classList.add('active');
+            document.getElementById('btn-' + sec).classList.add('active');
             
-            // Timeout de emergencia: si en 7 segundos no carga, muestra botón de salida
-            setTimeout(() => { 
-                exitBtn.classList.remove('hidden');
-                detail.innerText = "LA RESPUESTA ESTÁ TARDANDO DEMASIADO...";
-            }, 7000);
-
-            try {
-                detail.innerText = "CONECTANDO CON EL SERVIDOR...";
-                const { data: { session }, error: authError } = await _supa.auth.getSession();
-                
-                if (authError || !session) {
-                    window.location.href = 'index.html';
-                    return;
-                }
-
-                detail.innerText = "VALIDANDO PERMISOS DE MANDO...";
-                const { data: profile, error: profError } = await _supa.from('perfiles')
-                    .select('is_admin')
-                    .eq('id', session.user.id)
-                    .single();
-
-                if (profError || !profile || !profile.is_admin) {
-                    alert("ACCESO DENEGADO: No tienes permisos de administrador.");
-                    window.location.href = 'index.html';
-                } else {
-                    // TODO CORRECTO
-                    document.getElementById('lock-screen').style.display = 'none';
-                    loadUsers();
-                }
-            } catch (err) {
-                detail.innerText = "ERROR CRÍTICO: " + err.message;
-                console.error(err);
-            }
+            if(sec === 'users') loadUsers();
+            if(sec === 'tourneys') loadTourneys();
+            if(sec === 'tickets') loadTickets();
         }
 
-        // --- FUNCIONES DE NAVEGACION ---
-        function showView(v) {
-            document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
-            document.getElementById('v-' + v).classList.add('active');
-            document.getElementById('n-' + v).classList.add('active');
-            if(v === 'users') loadUsers();
-            if(v === 'tourneys') loadTourneys();
-            if(v === 'tickets') loadTickets();
-        }
-
-        // --- LOGICA DE DATOS ---
+        // --- GESTIÓN DE USUARIOS ---
         async function loadUsers() {
-            const { data } = await _supa.from('perfiles').select('*').order('xp', {ascending: false});
-            if(!data) return;
-            document.getElementById('user-list').innerHTML = data.map(u => `
-                <tr class="border-b border-white/5 text-sm">
-                    <td class="p-2 flex items-center gap-2"><img src="${u.avatar_url}" class="w-6 h-6 rounded-full"> ${u.nombre}</td>
-                    <td class="p-2"><input type="number" value="${u.xp}" onchange="upd('${u.id}', 'xp', this.value)" class="w-16"></td>
-                    <td class="p-2"><input type="number" value="${u.victorias}" onchange="upd('${u.id}', 'victorias', this.value)" class="w-16"></td>
-                    <td class="p-2">${u.is_admin ? '✅' : '❌'}</td>
-                    <td class="p-2"><button onclick="ban('${u.id}', ${u.baneado})" class="text-[10px] ${u.baneado ? 'text-green-500' : 'text-red-500'} font-bold">${u.baneado ? 'REMITIR' : 'BANEAR'}</button></td>
+            const { data, error } = await _supa.from('perfiles').select('*').order('created_at', {ascending: false});
+            if(error) return console.log("Error:", error);
+
+            const tbody = document.getElementById('users-body');
+            tbody.innerHTML = data.map(u => `
+                <tr class="hover:bg-white/5 transition">
+                    <td class="flex items-center gap-3">
+                        <img src="${u.avatar_url}" class="w-8 h-8 rounded-full border border-zinc-700">
+                        <span class="font-bold uppercase text-[12px]">${u.nombre}</span>
+                    </td>
+                    <td><input type="number" value="${u.xp}" onchange="updUser('${u.id}', 'xp', this.value)"></td>
+                    <td><input type="number" value="${u.victorias}" onchange="updUser('${u.id}', 'victorias', this.value)"></td>
+                    <td><button onclick="toggleAdmin('${u.id}', ${u.is_admin})" class="text-[10px] font-black ${u.is_admin ? 'text-amber-500' : 'text-zinc-600'}">${u.is_admin ? 'ADMIN' : 'USUARIO'}</button></td>
+                    <td><span class="text-[10px] font-black ${u.baneado ? 'text-red-500' : 'text-green-500'}">${u.baneado ? 'BANEADO' : 'ACTIVO'}</span></td>
+                    <td><button onclick="banUser('${u.id}', ${u.baneado})" class="text-[10px] font-bold text-zinc-500 hover:text-white uppercase">Cambiar Estado</button></td>
                 </tr>
             `).join('');
         }
 
-        async function upd(id, field, val) {
+        async function updUser(id, field, val) {
             const obj = {}; obj[field] = parseInt(val);
             await _supa.from('perfiles').update(obj).eq('id', id);
         }
 
-        async function ban(id, stat) {
-            await _supa.from('perfiles').update({baneado: !stat}).eq('id', id);
+        async function toggleAdmin(id, current) {
+            await _supa.from('perfiles').update({is_admin: !current}).eq('id', id);
             loadUsers();
         }
 
+        async function banUser(id, current) {
+            await _supa.from('perfiles').update({baneado: !current}).eq('id', id);
+            loadUsers();
+        }
+
+        // --- GESTIÓN DE TORNEOS ---
+        function openTModal() { document.getElementById('t-modal').style.display = 'flex'; }
+        function closeTModal() { document.getElementById('t-modal').style.display = 'none'; }
+
+        async function createTournament() {
+            const n = document.getElementById('new-t-name').value;
+            const j = document.getElementById('new-t-game').value;
+            const c = document.getElementById('new-t-cap').value;
+            const i = document.getElementById('new-t-ins').value;
+            
+            const { error } = await _supa.from('torneos').insert({ nombre: n, juego: j, capacidad: c, inscritos: i });
+            if(!error) { closeTModal(); loadTourneys(); }
+        }
+
         async function loadTourneys() {
-            const { data } = await _supa.from('torneos').select('*');
-            document.getElementById('tourney-list').innerHTML = data.map(t => `
-                <div class="glass p-4 rounded-xl flex justify-between items-center">
-                    <div>
-                        <p class="font-bold text-amber-500">${t.nombre}</p>
-                        <p class="text-[10px] text-zinc-500 uppercase">${t.juego} | ${t.inscritos}/${t.capacidad}</p>
-                    </div>
-                    <button onclick="delT('${t.id}')" class="text-red-500 text-xs font-black">X</button>
+            const { data } = await _supa.from('torneos').select('*').order('created_at', {ascending: false});
+            document.getElementById('tourneys-grid').innerHTML = data.map(t => `
+                <div class="glass p-6 rounded-2xl border-t-2 border-amber-500">
+                    <h4 class="font-orbitron font-bold text-white mb-2 uppercase">${t.nombre}</h4>
+                    <p class="text-xs text-zinc-500 font-bold mb-4 uppercase">${t.juego} | ${t.inscritos}/${t.capacidad}</p>
+                    <button onclick="delT('${t.id}')" class="text-[9px] font-black text-red-500 hover:underline uppercase">Eliminar Arena</button>
                 </div>
             `).join('');
         }
 
-        async function createNewTourney() {
-            const n = prompt("Nombre del Torneo:");
-            const j = prompt("Juego:");
-            if(n && j) {
-                await _supa.from('torneos').insert({ nombre: n, juego: j, capacidad: 16, inscritos: 0 });
-                loadTourneys();
-            }
-        }
-
         async function delT(id) {
-            if(confirm("¿Borrar torneo?")) {
+            if(confirm("¿ELIMINAR ESTE TORNEO DEFINITIVAMENTE?")) {
                 await _supa.from('torneos').delete().eq('id', id);
                 loadTourneys();
             }
         }
 
+        // --- GESTIÓN DE TICKETS ---
         async function loadTickets() {
             const { data } = await _supa.from('tickets_soporte').select('*').order('created_at', {ascending: false});
-            document.getElementById('ticket-list').innerHTML = data.map(tk => `
-                <div class="glass p-4 rounded-xl border-l-2 ${tk.leido ? 'border-zinc-700 opacity-50' : 'border-amber-500'}">
-                    <p class="text-xs font-bold text-amber-500 uppercase">${tk.asunto}</p>
-                    <p class="text-sm mt-1">${tk.mensaje}</p>
-                    <button onclick="read('${tk.id}')" class="text-[9px] mt-2 text-zinc-500 font-bold uppercase">Marcar leído</button>
+            const list = document.getElementById('tickets-list');
+            if(!data.length) { list.innerHTML = "<p class='text-zinc-500 uppercase text-xs'>Bandeja de entrada vacía.</p>"; return; }
+            
+            list.innerHTML = data.map(tk => `
+                <div class="glass p-5 rounded-xl border-l-4 ${tk.leido ? 'border-zinc-700 opacity-50' : 'border-amber-500'}">
+                    <div class="flex justify-between mb-2">
+                        <span class="text-xs font-black text-amber-500 uppercase">${tk.asunto}</span>
+                        <span class="text-[9px] text-zinc-600">${new Date(tk.created_at).toLocaleDateString()}</span>
+                    </div>
+                    <p class="text-sm text-zinc-300 mb-4">${tk.mensaje}</p>
+                    <button onclick="markRead('${tk.id}')" class="text-[9px] font-bold text-zinc-500 uppercase hover:text-white">Marcar como leído</button>
                 </div>
             `).join('');
         }
 
-        async function read(id) {
+        async function markRead(id) {
             await _supa.from('tickets_soporte').update({leido: true}).eq('id', id);
             loadTickets();
         }
 
-        // EJECUTAR AL CARGAR
-        runSecurityCheck();
+        // Iniciar con lista de usuarios
+        loadUsers();
     </script>
 </body>
 </html>
