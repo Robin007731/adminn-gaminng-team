@@ -3,339 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARBITRON | CUSTOM APEX CONTROL</title>
-    
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <title>NEON_OS | Neural Admin Command</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Orbitron:wght@700&display=swap" rel="stylesheet">
-    
-    <style id="custom-theme">
-        :root {
-            --bg-main: #f1f5f9;
-            --sidebar-bg: #ffffff;
-            --border-color: #e2e8f0;
-            --brand-color: #00bac7;
-            --text-main: #1e293b;
-        }
-    </style>
-
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { 
-            background-color: var(--bg-main); 
-            color: var(--text-main); 
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            margin: 0; display: flex; min-height: 100vh; transition: 0.3s;
-        }
-
-        aside {
-            width: 260px; background: var(--sidebar-bg); border-right: 2px solid var(--border-color);
-            display: flex; flex-direction: column; padding: 1.5rem; position: fixed; height: 100vh; z-index: 50;
-        }
-
-        main { flex: 1; margin-left: 260px; padding: 2.5rem; }
-
-        .card {
-            background: white; border-radius: 16px; padding: 1.5rem;
-            border: 2px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-            margin-bottom: 1.5rem; transition: border-color 0.3s;
-        }
-
-        .nav-link {
-            display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 10px;
-            color: #64748b; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 0.85rem;
-        }
-
-        .nav-link:hover, .nav-link.active {
-            background: var(--brand-color); color: white;
-        }
-
-        .btn-action {
-            background: var(--brand-color); color: white; padding: 10px 20px;
-            border-radius: 8px; font-weight: 800; font-size: 0.7rem; text-transform: uppercase;
-        }
-
-        table { width: 100%; }
-        th { text-align: left; color: #94a3b8; font-size: 0.65rem; text-transform: uppercase; padding: 1rem; border-bottom: 2px solid var(--border-color); }
-        td { padding: 1rem; border-bottom: 1px solid var(--border-color); font-size: 0.85rem; }
-
-        .view-section { display: none; }
-        .view-section.active { display: block; animation: fadeIn 0.3s ease; }
-
-        /* Color Picker Styles */
-        .config-dot { width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        :root { --cyan: #36f0ff; --pink: #ff4fd8; --green: #2dff83; --warning: #ffb800; --danger: #ff4b4b; --bg: #010205; }
+        body { font-family: 'Rajdhani', sans-serif; background: var(--bg); color: #fff; overflow-x: hidden; }
+        .neon-border { border: 1px solid rgba(54, 240, 255, 0.2); box-shadow: 0 0 15px rgba(54, 240, 255, 0.1); }
+        .sidebar-item { transition: 0.3s; border-left: 3px solid transparent; cursor: pointer; }
+        .sidebar-item:hover, .sidebar-item.active { background: rgba(54, 240, 255, 0.1); border-left: 3px solid var(--cyan); color: var(--cyan); }
+        .glass-panel { background: rgba(10, 15, 25, 0.8); backdrop-filter: blur(20px); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
+        .stat-card { position: relative; overflow: hidden; }
+        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--cyan); }
+        input, select, textarea { background: rgba(0,0,0,0.5) !important; border: 1px solid rgba(255,255,255,0.1) !important; color: white !important; font-size: 13px !important; }
+        .badge-live { animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     </style>
 </head>
-<body>
+<body class="flex flex-col lg:flex-row min-h-screen">
 
-    <aside>
-        <div class="mb-10 flex items-center gap-3">
-            <div class="p-2 rounded-lg bg-[var(--brand-color)] text-white font-bold font-orbitron">AR</div>
-            <h1 class="font-orbitron text-sm tracking-tighter">APEX_COMMAND</h1>
+    <aside class="w-full lg:w-72 bg-[#05070a] border-r border-white/5 flex flex-col z-50">
+        <div class="p-6">
+            <div class="font-orbitron font-black text-2xl text-[var(--cyan)] tracking-tighter">NEON<span class="text-white">_OS</span></div>
+            <p class="text-[9px] text-gray-500 font-bold tracking-[3px]">SISTEMA DE CONTROL GLOBAL</p>
         </div>
 
-        <nav class="space-y-1">
-            <div class="nav-link active" onclick="showView('dashboard', this)">📊 DASHBOARD</div>
-            <div class="nav-link" onclick="showView('users', this)">👤 USUARIOS</div>
-            <div class="nav-link" onclick="showView('tourneys', this)">⚔️ TORNEOS</div>
-            <div class="nav-link" onclick="showView('custom', this)">🎨 PERSONALIZACIÓN</div>
-            <div class="nav-link" onclick="showView('codes', this)">🎫 CÓDIGOS XP</div>
+        <nav class="flex-grow overflow-y-auto px-4 space-y-1">
+            <div class="text-[10px] text-gray-600 font-bold mb-2 ml-2 tracking-widest uppercase">Núcleo</div>
+            <div class="sidebar-item active p-3 flex items-center gap-3 text-sm font-bold"><span>📊</span> Dashboard Realtime</div>
+            <div class="sidebar-item p-3 flex items-center gap-3 text-sm font-bold"><span>🏆</span> Gestor de Torneos Pro</div>
+            <div class="sidebar-item p-3 flex items-center gap-3 text-sm font-bold"><span>👥</span> Control de Usuarios</div>
+            
+            <div class="text-[10px] text-gray-600 font-bold mt-6 mb-2 ml-2 tracking-widest uppercase">Econ & Marketing</div>
+            <div class="sidebar-item p-3 flex items-center gap-3 text-sm font-bold"><span>💰</span> Economía & Skins</div>
+            <div class="sidebar-item p-3 flex items-center gap-3 text-sm font-bold"><span>🎟️</span> Cupones y Promos</div>
+            <div class="sidebar-item p-3 flex items-center gap-3 text-sm font-bold"><span>📧</span> Campañas Push/Email</div>
+            
+            <div class="text-[10px] text-gray-600 font-bold mt-6 mb-2 ml-2 tracking-widest uppercase">Seguridad</div>
+            <div class="sidebar-item p-3 flex items-center gap-3 text-sm font-bold"><span>🛡️</span> Anti-Cheat Logs</div>
+            <div class="sidebar-item p-3 flex items-center gap-3 text-sm font-bold text-red-400"><span>🚫</span> Ban Hammer HWID</div>
+            <div class="sidebar-item p-3 flex items-center gap-3 text-sm font-bold"><span>🔑</span> Roles y Permisos</div>
         </nav>
 
-        <div class="mt-auto pt-4 border-t border-slate-200">
-            <div id="admin-info" class="text-[10px] font-bold text-slate-400 mb-4">MODO: ADMINISTRADOR SUPREMO</div>
-            <button onclick="location.reload()" class="w-full py-2 text-xs font-black bg-red-50 text-red-500 rounded-lg border border-red-100">RELOG</button>
+        <div class="p-6 bg-black/50 border-t border-white/5">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-pink-500 to-cyan-500"></div>
+                <div class="text-xs">
+                    <p class="font-bold">Admin_Root</p>
+                    <p class="text-green-500 badge-live">● ONLINE</p>
+                </div>
+            </div>
         </div>
     </aside>
 
-    <main>
+    <main class="flex-grow p-4 lg:p-10">
         
-        <section id="view-dashboard" class="view-section active">
-            <div class="grid grid-cols-4 gap-4 mb-8">
-                <div class="card bg-white">
-                    <p class="text-[10px] font-black text-slate-400 uppercase">Usuarios</p>
-                    <h2 id="db-u" class="text-3xl font-extrabold">0</h2>
-                </div>
-                <div class="card bg-white">
-                    <p class="text-[10px] font-black text-slate-400 uppercase">Arenas</p>
-                    <h2 id="db-t" class="text-3xl font-extrabold text-[var(--brand-color)]">0</h2>
-                </div>
-                <div class="card bg-white">
-                    <p class="text-[10px] font-black text-slate-400 uppercase">Puntos Globales</p>
-                    <h2 id="db-xp" class="text-3xl font-extrabold">0</h2>
-                </div>
-                <div class="card bg-white">
-                    <p class="text-[10px] font-black text-slate-400 uppercase">Ping DB</p>
-                    <h2 class="text-3xl font-extrabold text-green-500">24ms</h2>
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
+            <div>
+                <h2 class="font-orbitron text-3xl font-black">DASHBOARD <span class="text-[var(--cyan)]">MAESTRO</span></h2>
+                <div class="flex gap-4 mt-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                    <span>Versión 4.2.0-Stable</span>
+                    <span class="text-[var(--green)]">Servidores: 100% Up</span>
+                    <span class="text-[var(--pink)]">Uptime: 142d 12h</span>
                 </div>
             </div>
+            <div class="flex gap-3">
+                <button class="bg-white/5 border border-white/10 p-2 rounded-lg hover:bg-white/10 transition">🔔</button>
+                <button class="bg-white text-black px-6 py-2 rounded-full font-black font-orbitron text-xs tracking-widest">DEPLOY ACTUALIZACIÓN</button>
+            </div>
+        </header>
+
+        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            <div class="glass-panel p-6 stat-card">
+                <h4 class="font-orbitron text-xs font-bold mb-4 text-[var(--cyan)]">TORNEOS</h4>
+                <div class="grid grid-cols-2 gap-2">
+                    <button class="bg-white/5 p-2 rounded text-[10px] hover:bg-[var(--cyan)] hover:text-black font-bold">NUEVO</button>
+                    <button class="bg-white/5 p-2 rounded text-[10px] hover:bg-[var(--cyan)] hover:text-black font-bold">BORRADORES</button>
+                    <button class="bg-white/5 p-2 rounded text-[10px] hover:bg-[var(--cyan)] hover:text-black font-bold">BRACKETS</button>
+                    <button class="bg-white/5 p-2 rounded text-[10px] hover:bg-[var(--cyan)] hover:text-black font-bold">PREMIACIÓN</button>
+                </div>
+            </div>
+
+            <div class="glass-panel p-6 stat-card" style="border-color: var(--pink)">
+                <h4 class="font-orbitron text-xs font-bold mb-4 text-[var(--pink)]">FINANZAS</h4>
+                <div class="grid grid-cols-2 gap-2">
+                    <button class="bg-white/5 p-2 rounded text-[10px] hover:bg-[var(--pink)] hover:text-black font-bold">RETIROS</button>
+                    <button class="bg-white/5 p-2 rounded text-[10px] hover:bg-[var(--pink)] hover:text-black font-bold">DEPÓSITOS</button>
+                    <button class="bg-white/5 p-2 rounded text-[10px] hover:bg-[var(--pink)] hover:text-black font-bold">TASAS %</button>
+                    <button class="bg-white/5 p-2 rounded text-[10px] hover:bg-[var(--pink)] hover:text-black font-bold">FACTURAS</button>
+                </div>
+            </div>
+
+            <div class="glass-panel p-6 stat-card" style="border-color: var(--green)">
+                <h4 class="font-orbitron text-xs font-bold mb-4 text-[var(--green)]">COMUNIDAD</h4>
+                <div class="grid grid-cols-2 gap-2">
+                    <button class="bg-white/5 p-2 rounded text-[10px] hover:bg-[var(--green)] hover:text-black font-bold">CHATS</button>
+                    <button class="bg-white/5 p-2 rounded text-[10px] hover:bg-[var(--green)] hover:text-black font-bold">SOPORTE</button>
+                    <button class="bg-white/5 p-2 rounded text-[10px] hover:bg-[var(--green)] hover:text-black font-bold">FOROS</button>
+                    <button class="bg-white/5 p-2 rounded text-[10px] hover:bg-[var(--green)] hover:text-black font-bold">REPORTE</button>
+                </div>
+            </div>
+
+            <div class="glass-panel p-6 stat-card" style="border-color: var(--warning)">
+                <h4 class="font-orbitron text-xs font-bold mb-4 text-[var(--warning)]">CORE SYS</h4>
+                <div class="grid grid-cols-2 gap-2">
+                    <button class="bg-white/5 p-2 rounded text-[10px] hover:bg-[var(--warning)] hover:text-black font-bold">MAINTENANCE</button>
+                    <button class="bg-white/5 p-2 rounded text-[10px] hover:bg-[var(--warning)] hover:text-black font-bold">API KEYS</button>
+                    <button class="bg-white/5 p-2 rounded text-[10px] hover:bg-[var(--warning)] hover:text-black font-bold">BACKUPS</button>
+                    <button class="bg-white/5 p-2 rounded text-[10px] hover:bg-[var(--warning)] hover:text-black font-bold">LOGS</button>
+                </div>
+            </div>
+        </section>
+
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
             
-            <div class="card">
-                <h3 class="font-orbitron text-xs mb-4 uppercase">Actividad Reciente</h3>
-                <div id="log-container" class="space-y-2 text-[11px] font-mono text-slate-500">
-                    <div>[SYSTEM]: Consola lista para recibir órdenes.</div>
-                </div>
-            </div>
-        </section>
+            <section class="xl:col-span-2 glass-panel p-8">
+                <h3 class="font-orbitron text-xl font-bold mb-6 flex items-center gap-3">
+                    <span class="text-[var(--cyan)]">✚</span> CONFIGURACIÓN DE NUEVO TORNEO
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <label class="block text-xs font-bold uppercase text-gray-500">Nombre del Evento</label>
+                        <input type="text" class="w-full p-3 rounded bg-black border border-white/10" placeholder="Ej: Major Neon S2">
+                        
+                        <label class="block text-xs font-bold uppercase text-gray-500">Juego Principal</label>
+                        <select class="w-full p-3 rounded bg-black border border-white/10">
+                            <option>Valorant</option>
+                            <option>League of Legends</option>
+                            <option>CS2</option>
+                            <option>Free Fire</option>
+                        </select>
 
-        <section id="view-users" class="view-section">
-            <div class="card">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="font-orbitron text-xs uppercase">Gestión de Operativos</h3>
-                    <div class="flex gap-2">
-                        <input type="text" id="user-search" placeholder="Filtrar..." class="text-xs p-2 border rounded-lg" onkeyup="filterUsers()">
-                        <button onclick="window.print()" class="bg-slate-100 p-2 rounded-lg">🖨️</button>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase text-gray-500 mb-2">Prize Pool ($)</label>
+                                <input type="number" class="w-full p-3 rounded bg-black border border-white/10" placeholder="5000">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase text-gray-500 mb-2">Slots Máx.</label>
+                                <input type="number" class="w-full p-3 rounded bg-black border border-white/10" placeholder="64">
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Nickname</th>
-                            <th>Nivel XP</th>
-                            <th>Victorias</th>
-                            <th class="text-right">Mando</th>
-                        </tr>
-                    </thead>
-                    <tbody id="user-rows"></tbody>
-                </table>
-            </div>
-        </section>
 
-        <section id="view-tourneys" class="view-section">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="card">
-                    <h3 class="font-orbitron text-xs mb-4 uppercase">Nueva Arena</h3>
-                    <input type="text" id="new-t-name" placeholder="Nombre" class="w-full mb-3 p-3 border rounded-xl">
-                    <select id="new-t-game" class="w-full mb-3 p-3 border rounded-xl">
-                        <option>Warzone</option>
-                        <option>Free Fire</option>
-                        <option>Fortnite</option>
-                    </select>
-                    <input type="number" id="new-t-cap" placeholder="Cupos" class="w-full mb-4 p-3 border rounded-xl">
-                    <button onclick="createT()" class="btn-action w-full">Publicar Torneo</button>
+                    <div class="space-y-4">
+                        <label class="block text-xs font-bold uppercase text-gray-500">Reglas & Protocolos</label>
+                        <textarea class="w-full p-3 rounded bg-black border border-white/10 h-[108px]" placeholder="Normativas del torneo..."></textarea>
+                        
+                        <div class="flex items-center gap-4 p-4 border border-dashed border-white/10 rounded-lg">
+                            <div class="flex-grow">
+                                <p class="text-xs font-bold italic">Sincronización Inmediata</p>
+                                <p class="text-[10px] text-gray-500">Al publicar, se notificará vía Push a todos los usuarios.</p>
+                            </div>
+                            <input type="checkbox" class="w-6 h-6 accent-[var(--cyan)]">
+                        </div>
+                        <button class="w-full bg-[var(--cyan)] text-black font-black py-4 rounded font-orbitron hover:shadow-[0_0_30px_rgba(54,240,255,0.4)] transition">PUBLICAR EN ARENA CLIENTE</button>
+                    </div>
                 </div>
-                <div id="t-list-admin" class="lg:col-span-2 space-y-3"></div>
-            </div>
-        </section>
+            </section>
 
-        <section id="view-custom" class="view-section">
-            <div class="card">
-                <h3 class="font-orbitron text-xs mb-6 uppercase">Motor de Apariencia</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-                    <div class="space-y-3">
-                        <label class="text-xs font-bold text-slate-500">Color de Fondo</label>
-                        <input type="color" id="color-bg" oninput="updateTheme()" value="#f1f5f9" class="h-10">
+            <section class="glass-panel p-6 overflow-hidden">
+                <h3 class="font-orbitron text-sm font-bold mb-6 text-pink-500 uppercase tracking-tighter">Live Traffic Analyzer</h3>
+                <div class="space-y-6">
+                    <div>
+                        <div class="flex justify-between text-[10px] font-bold mb-2">
+                            <span>CARGA DEL SERVIDOR</span>
+                            <span class="text-[var(--cyan)]">42%</span>
+                        </div>
+                        <div class="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                            <div class="bg-[var(--cyan)] h-full w-[42%] shadow-[0_0_10px_var(--cyan)]"></div>
+                        </div>
                     </div>
-                    <div class="space-y-3">
-                        <label class="text-xs font-bold text-slate-500">Color de Bordes</label>
-                        <input type="color" id="color-border" oninput="updateTheme()" value="#e2e8f0" class="h-10">
+                    <div>
+                        <div class="flex justify-between text-[10px] font-bold mb-2">
+                            <span>ACCIONES POR SEGUNDO</span>
+                            <span class="text-[var(--pink)]">892 Req/s</span>
+                        </div>
+                        <div class="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                            <div class="bg-[var(--pink)] h-full w-[65%] shadow-[0_0_10px_var(--pink)]"></div>
+                        </div>
                     </div>
-                    <div class="space-y-3">
-                        <label class="text-xs font-bold text-slate-500">Color Primario</label>
-                        <input type="color" id="color-brand" oninput="updateTheme()" value="#00bac7" class="h-10">
-                    </div>
-                    <div class="space-y-3">
-                        <label class="text-xs font-bold text-slate-500">Sidebar</label>
-                        <input type="color" id="color-side" oninput="updateTheme()" value="#ffffff" class="h-10">
-                    </div>
-                </div>
-                <div class="mt-8 p-4 bg-slate-50 rounded-xl border border-dashed border-slate-300 text-center">
-                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Los cambios se aplican en tiempo real en este navegador</p>
-                </div>
-            </div>
-        </section>
 
-        <section id="view-codes" class="view-section">
-            <div class="card max-w-md mx-auto">
-                <h3 class="font-orbitron text-xs mb-6 uppercase">Generar Promo-Code</h3>
-                <div class="space-y-4">
-                    <input type="text" id="promo-code" placeholder="EJ: NEON2024" class="p-3 border rounded-xl w-full uppercase font-bold">
-                    <input type="number" id="promo-val" placeholder="Valor XP (Ej: 500)" class="p-3 border rounded-xl w-full">
-                    <button onclick="saveCode()" class="btn-action w-full">Activar Código</button>
+                    <div class="pt-6 border-t border-white/5 space-y-3">
+                        <p class="text-[10px] font-bold text-gray-500 mb-2 uppercase">Protocolos Criticos</p>
+                        <button class="w-full py-2 bg-red-500/10 border border-red-500/50 text-red-500 text-[10px] font-bold rounded hover:bg-red-500 hover:text-white transition">CONGELAR TODAS LAS TRANSACCIONES</button>
+                        <button class="w-full py-2 bg-yellow-500/10 border border-yellow-500/50 text-yellow-500 text-[10px] font-bold rounded hover:bg-yellow-500 hover:text-white transition">MODO MANTENIMIENTO GLOBAL</button>
+                        <button class="w-full py-2 bg-blue-500/10 border border-blue-500/50 text-blue-500 text-[10px] font-bold rounded hover:bg-blue-500 hover:text-white transition">VACIAR CACHÉ DE CLIENTES (CDN)</button>
+                    </div>
                 </div>
-            </div>
-        </section>
+            </section>
+        </div>
 
     </main>
 
-    <script>
-        const SB_URL = 'https://qxvqxdsfcvdmanxtzmkn.supabase.co';
-        const SB_KEY = 'sb_publishable_X2_itSXVSMUgkZeDLSE3KQ_HxD1Jf07';
-        const _api = supabase.createClient(SB_URL, SB_KEY);
+    <div class="fixed bottom-6 right-6 w-14 h-14 bg-[var(--cyan)] text-black rounded-full flex items-center justify-center font-bold shadow-2xl cursor-pointer hover:scale-110 transition z-[100]">
+        AI
+    </div>
 
-        window.onload = () => {
-            refreshStats();
-            addLog("Sistema v45.0 conectado satisfactoriamente.");
-        };
-
-        // --- MOTOR DE TEMAS ---
-        function updateTheme() {
-            const bg = document.getElementById('color-bg').value;
-            const border = document.getElementById('color-border').value;
-            const brand = document.getElementById('color-brand').value;
-            const side = document.getElementById('color-side').value;
-
-            const style = `
-                :root {
-                    --bg-main: ${bg};
-                    --sidebar-bg: ${side};
-                    --border-color: ${border};
-                    --brand-color: ${brand};
-                    --text-main: #1e293b;
-                }
-            `;
-            document.getElementById('custom-theme').innerHTML = style;
-        }
-
-        // --- VISTAS ---
-        function showView(id, btn) {
-            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
-            document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
-            document.getElementById('view-' + id).classList.add('active');
-            btn.classList.add('active');
-
-            if(id === 'users') loadUsers();
-            if(id === 'tourneys') loadTournaments();
-        }
-
-        // --- LÓGICA DE DATOS ---
-        async function refreshStats() {
-            const { count: u } = await _api.from('perfiles').select('*', { count: 'exact', head: true });
-            const { count: t } = await _api.from('torneos').select('*', { count: 'exact', head: true });
-            const { data: xp } = await _api.from('perfiles').select('xp');
-            
-            document.getElementById('db-u').innerText = u || 0;
-            document.getElementById('db-t').innerText = t || 0;
-            document.getElementById('db-xp').innerText = xp.reduce((a,b) => a + (b.xp || 0), 0);
-        }
-
-        async function loadUsers() {
-            const { data } = await _api.from('perfiles').select('*').order('xp', {ascending: false});
-            const container = document.getElementById('user-rows');
-            container.innerHTML = (data || []).map(u => `
-                <tr>
-                    <td class="font-bold">${u.nombre}</td>
-                    <td class="text-cyan-600 font-bold">${u.xp} XP</td>
-                    <td class="font-bold">${u.victorias}</td>
-                    <td class="text-right">
-                        <button onclick="editU('${u.id}', ${u.xp})" class="text-[10px] bg-slate-100 px-3 py-1 rounded-lg font-black hover:bg-[var(--brand-color)] hover:text-white transition">MOD</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        async function editU(id, currentXp) {
-            const val = prompt("Nuevo valor XP:", currentXp);
-            if(val) {
-                await _api.from('perfiles').update({ xp: parseInt(val) }).eq('id', id);
-                addLog(`XP actualizado para usuario ID: ${id.split('-')[0]}`);
-                loadUsers();
-            }
-        }
-
-        async function loadTournaments() {
-            const { data } = await _api.from('torneos').select('*').order('created_at', {ascending: false});
-            const container = document.getElementById('t-list-admin');
-            container.innerHTML = (data || []).map(t => `
-                <div class="card flex justify-between items-center py-4">
-                    <div>
-                        <p class="text-[8px] font-black text-slate-400 uppercase">${t.juego}</p>
-                        <h4 class="font-bold">${t.nombre}</h4>
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <span class="text-xs font-bold text-slate-400">${t.inscritos}/${t.capacidad}</span>
-                        <button onclick="delT('${t.id}')" class="text-red-500 font-black text-[10px]">BORRAR</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        async function createT() {
-            const name = document.getElementById('new-t-name').value;
-            const game = document.getElementById('new-t-game').value;
-            const cap = document.getElementById('new-t-cap').value;
-            
-            const { error } = await _api.from('torneos').insert({
-                nombre: name, juego: game, capacidad: parseInt(cap), inscritos: 0
-            });
-            if(!error) {
-                addLog(`Nuevo torneo creado: ${name}`);
-                loadTournaments();
-                refreshStats();
-            }
-        }
-
-        async function delT(id) {
-            if(confirm("¿Eliminar arena?")) {
-                await _api.from('torneos').delete().eq('id', id);
-                loadTournaments();
-                refreshStats();
-            }
-        }
-
-        function addLog(msg) {
-            const container = document.getElementById('log-container');
-            const time = new Date().toLocaleTimeString();
-            container.innerHTML = `<div>[${time}] ${msg}</div>` + container.innerHTML;
-        }
-
-        function saveCode() {
-            const code = document.getElementById('promo-code').value;
-            const val = document.getElementById('promo-val').value;
-            if(code && val) {
-                addLog(`Código promo generado: ${code.toUpperCase()} por ${val}XP`);
-                alert("Código guardado en el buffer del sistema.");
-            }
-        }
-
-        function filterUsers() {
-            const q = document.getElementById('user-search').value.toLowerCase();
-            const rows = document.querySelectorAll('#user-rows tr');
-            rows.forEach(r => {
-                r.style.display = r.innerText.toLowerCase().includes(q) ? '' : 'none';
-            });
-        }
-    </script>
 </body>
 </html>
