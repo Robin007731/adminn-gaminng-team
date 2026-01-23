@@ -1,8 +1,0 @@
-{
-  "name": "Zona Gamer - Admin Panel",
-  "description": "Exclusive administrative command center for Zona Gamer, featuring tournament management, real-time chat moderation, and player economy control with a high-performance neon aesthetic.",
-  "requestFramePermissions": [
-    "camera",
-    "microphone"
-  ]
-}
