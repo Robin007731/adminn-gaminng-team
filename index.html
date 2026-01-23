@@ -2,108 +2,256 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>CMD CENTER | ULTRA ADMIN</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMD CENTER | ARENA NEON ADMIN</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        body { background: #020408; color: #e2e8f0; font-family: sans-serif; }
+        :root { --gold: #fbbf24; --neon-cyan: #00f2ff; --neon-pink: #ff00ff; }
+        body { 
+            background: #020408; color: #e2e8f0; font-family: 'Rajdhani', sans-serif;
+            background-image: radial-gradient(circle at 0% 0%, rgba(0, 242, 255, 0.05) 0%, transparent 50%);
+        }
         .font-orbitron { font-family: 'Orbitron', sans-serif; }
-        .glass { background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255,255,255,0.05); }
-        .btn-action { transition: 0.2s; text-transform: uppercase; font-size: 10px; font-weight: bold; }
-        input, select { background: #000; border: 1px solid #334155; padding: 8px; border-radius: 4px; color: white; }
+        .glass-panel { background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(10px); }
+        
+        /* Scrollbar custom */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #020408; }
+        ::-webkit-scrollbar-thumb { background: var(--neon-cyan); }
+
+        .btn-gold { background: var(--gold); color: black; font-weight: 800; clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%); }
+        .btn-gold:hover { transform: scale(1.02); box-shadow: 0 0 15px var(--gold); }
+        
+        input, select, textarea { 
+            background: rgba(0,0,0,0.4) !important; 
+            border: 1px solid rgba(255,255,255,0.1) !important; 
+            color: white !important; padding: 10px; border-radius: 4px; outline: none; 
+        }
+        input:focus { border-color: var(--neon-cyan) !important; }
     </style>
 </head>
 <body class="p-4 md:p-8">
-    <header class="mb-10 flex justify-between items-center border-b border-cyan-500/20 pb-6">
-        <h1 class="font-orbitron text-2xl text-cyan-400 italic">CORE_COMMAND_V2</h1>
-        <div class="flex gap-2">
-            <button onclick="globalAlert()" class="bg-red-600 px-4 py-2 rounded text-xs font-bold">🚨 ALERTA GLOBAL</button>
-            <button onclick="resetSeason()" class="bg-white/10 px-4 py-2 rounded text-xs font-bold hover:bg-red-900">RESET TEMP</button>
+
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 border-b border-white/10 pb-6 gap-4">
+        <div>
+            <h1 class="font-orbitron text-2xl font-black text-cyan-400 italic tracking-tighter uppercase">Command_Center <span class="text-white text-[10px] block tracking-[0.6em]">Ultra Management V2</span></h1>
+        </div>
+        <div class="flex flex-wrap gap-3">
+            <button onclick="enviarAlertaGlobal()" class="bg-red-600/20 text-red-500 border border-red-500/30 px-4 py-2 rounded text-[10px] font-black uppercase hover:bg-red-600 hover:text-white transition">🚨 Alerta Global</button>
+            <button onclick="resetTemporada()" class="bg-zinc-800 text-zinc-400 px-4 py-2 rounded text-[10px] font-black uppercase hover:bg-white hover:text-black transition">Reset Temp</button>
+            <div id="db-indicator" class="flex items-center gap-2 bg-green-500/10 text-green-500 px-4 py-2 rounded border border-green-500/20 text-[10px] font-bold">
+                <span class="h-2 w-2 bg-green-500 rounded-full animate-pulse"></span> SYSTEM_LIVE
+            </div>
         </div>
     </header>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 glass p-6 rounded-xl">
-            <h2 class="font-orbitron text-sm mb-4 text-cyan-500">CONTROL_DE_GUERREROS</h2>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs">
-                    <thead class="text-zinc-500 border-b border-white/5">
-                        <tr>
-                            <th class="p-2">Usuario</th>
-                            <th class="p-2">Estado</th>
-                            <th class="p-2">Acciones Rápidas</th>
-                        </tr>
-                    </thead>
-                    <tbody id="user-table"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="space-y-6">
-            <div class="glass p-6 rounded-xl">
-                <h2 class="font-orbitron text-sm mb-4 text-pink-500">ESTABLECER_TORNEO</h2>
-                <div class="flex flex-col gap-2">
-                    <input id="t-name" placeholder="Nombre Torneo">
-                    <input id="t-game" placeholder="Juego (Ej: Valorant)">
-                    <input id="t-slots" type="number" placeholder="Cupos">
-                    <button onclick="addTournament()" class="bg-cyan-500 text-black py-2 font-black text-xs">LANZAR</button>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <div class="lg:col-span-4 space-y-6">
+            <div class="glass-panel p-6 rounded-xl">
+                <h3 class="font-orbitron text-xs mb-6 text-cyan-400 uppercase tracking-widest">Crear_Torneo_Oficial</h3>
+                <div class="flex flex-col gap-4">
+                    <input id="adm-t-nombre" type="text" placeholder="NOMBRE DEL DESAFÍO">
+                    <select id="adm-t-juego">
+                        <option value="VALORANT">VALORANT</option>
+                        <option value="WILD RIFT">WILD RIFT</option>
+                        <option value="FREE FIRE">FREE FIRE</option>
+                        <option value="LEAGUE OF LEGENDS">LOL</option>
+                        <option value="CALL OF DUTY">COD MOBILE</option>
+                    </select>
+                    <input id="adm-t-cupos" type="number" placeholder="CAPACIDAD DE JUGADORES">
+                    <button onclick="crearTorneoAdm()" class="btn-gold py-3 text-[10px] uppercase">Lanzar a la Arena</button>
                 </div>
             </div>
 
-            <div class="glass p-6 rounded-xl">
-                <h2 class="font-orbitron text-sm mb-4 text-yellow-500">SOPORTE_INBOX</h2>
-                <div id="ticket-list" class="space-y-2"></div>
+            <div class="glass-panel p-6 rounded-xl">
+                <h3 class="font-orbitron text-xs mb-4 text-pink-500 uppercase tracking-widest">Anuncios_Hero</h3>
+                <textarea id="adm-noticia" rows="3" placeholder="Escribe un anuncio para el inicio de la app..." class="w-full text-xs"></textarea>
+                <button onclick="publicarNoticiaAdm()" class="w-full bg-white text-black py-2 mt-2 font-black text-[10px] uppercase">Actualizar Terminales</button>
+            </div>
+        </div>
+
+        <div class="lg:col-span-8 space-y-6">
+            <div class="glass-panel p-6 rounded-xl min-h-[500px]">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="font-orbitron text-xs text-yellow-500 uppercase tracking-widest">Base_de_Datos_Guerreros</h3>
+                    <input type="text" id="user-search" onkeyup="searchUser()" placeholder="BUSCAR GUERRERO..." class="text-[10px] w-48">
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-[11px]">
+                        <thead class="text-zinc-500 uppercase border-b border-white/5">
+                            <tr>
+                                <th class="pb-4">Guerrero</th>
+                                <th class="pb-4">Nivel/XP</th>
+                                <th class="pb-4">Estado</th>
+                                <th class="pb-4 text-right">Acciones de Poder</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adm-lista-usuarios">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="glass-panel p-6 rounded-xl">
+                    <h3 class="font-orbitron text-xs mb-6 text-cyan-400 uppercase tracking-widest">Tickets_Pendientes</h3>
+                    <div id="adm-lista-tickets" class="space-y-3 max-h-60 overflow-y-auto pr-2">
+                        </div>
+                </div>
+                
+                <div class="glass-panel p-6 rounded-xl border-l-4 border-l-yellow-500">
+                    <h3 class="font-orbitron text-xs mb-4 text-yellow-500 uppercase tracking-widest">Logs_del_Sistema</h3>
+                    <div id="adm-logs" class="text-[9px] font-mono text-zinc-500 space-y-1">
+                        <div>[SISTEMA]: Panel de administración iniciado...</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        const _supa = supabase.createClient('URL', 'KEY');
+        // CONFIGURACIÓN SUPABASE (MISMA QUE EL CLIENTE)
+        const _supa = supabase.createClient('https://qxvqxdsfcvdmanxtzmkn.supabase.co', 'sb_publishable_X2_itSXVSMUgkZeDLSE3KQ_HxD1Jf07');
 
-        async function loadUsers() {
-            const { data } = await _supa.from('perfiles').select('*').order('xp', {ascending: false});
-            document.getElementById('user-table').innerHTML = data.map(u => `
-                <tr class="border-b border-white/5">
-                    <td class="p-2">${u.nombre} <span class="block text-[9px] text-zinc-500">${u.xp} XP</span></td>
-                    <td class="p-2">${u.baneado ? '🔴 BANEADO' : '🟢 ACTIVO'}</td>
-                    <td class="p-2 flex gap-1">
-                        <button onclick="banUser('${u.id}', ${!u.baneado})" class="bg-zinc-800 p-1 rounded text-[8px]">${u.baneado ? 'UNBAN' : 'BAN'}</button>
-                        <button onclick="giveXP('${u.id}', ${u.xp + 500})" class="bg-cyan-900 p-1 rounded text-[8px]">+500XP</button>
+        // 1. CARGAR USUARIOS CON FILTRO DE BANEADOS
+        async function cargarUsuariosAdm() {
+            const { data, error } = await _supa.from('perfiles').select('*').order('xp', { ascending: false });
+            if(error) return;
+
+            const tbody = document.getElementById('adm-lista-usuarios');
+            tbody.innerHTML = data.map(u => `
+                <tr class="border-b border-white/5 hover:bg-white/[0.02] transition">
+                    <td class="py-4 flex items-center gap-3">
+                        <img src="${u.avatar_url}" class="w-7 h-7 rounded-full border border-white/10">
+                        <div>
+                            <span class="block font-bold uppercase ${u.baneado ? 'text-red-500 line-through' : ''}">${u.nombre}</span>
+                            <span class="text-[9px] text-zinc-500">ID: ${u.id.slice(0,8)}</span>
+                        </div>
+                    </td>
+                    <td class="py-4">
+                        <span class="text-cyan-400 font-bold">${u.xp.toLocaleString()} XP</span>
+                        <span class="block text-[9px] text-zinc-500">${u.victorias} Victorias</span>
+                    </td>
+                    <td class="py-4">
+                        <span class="px-2 py-0.5 rounded text-[8px] font-black ${u.baneado ? 'bg-red-500/20 text-red-500' : 'bg-green-500/20 text-green-500'}">
+                            ${u.baneado ? 'BANEADO' : 'ACTIVO'}
+                        </span>
+                    </td>
+                    <td class="py-4 text-right space-x-1">
+                        <button onclick="gestionarXP('${u.id}', ${u.xp + 1000})" class="bg-cyan-500/10 text-cyan-400 p-1.5 rounded hover:bg-cyan-500 hover:text-black transition" title="Dar 1000 XP">💎</button>
+                        <button onclick="gestionarVictoria('${u.id}', ${u.victorias + 1})" class="bg-pink-500/10 text-pink-400 p-1.5 rounded hover:bg-pink-500 hover:text-black transition" title="Sumar Victoria">🏆</button>
+                        <button onclick="toggleBan('${u.id}', ${!u.baneado})" class="bg-red-500/10 text-red-500 p-1.5 rounded hover:bg-red-600 hover:text-white transition" title="Banear/Desbanear">🚫</button>
                     </td>
                 </tr>
             `).join('');
         }
 
-        async function banUser(id, status) {
-            await _supa.from('perfiles').update({ baneado: status }).eq('id', id);
-            loadUsers();
+        // 2. CREAR TORNEOS
+        async function crearTorneoAdm() {
+            const nombre = document.getElementById('adm-t-nombre').value;
+            const juego = document.getElementById('adm-t-juego').value;
+            const capacidad = document.getElementById('adm-t-cupos').value;
+
+            if(!nombre || !capacidad) return alert("Completa los datos");
+
+            const { error } = await _supa.from('torneos').insert({ nombre, juego, capacidad });
+            if(!error) {
+                registrarLog(`Nuevo torneo creado: ${nombre}`);
+                alert("TORNEO LANZADO");
+                location.reload();
+            }
         }
 
-        async function globalAlert() {
-            const msg = prompt("Mensaje de alerta para todos los usuarios:");
-            if(msg) await _supa.from('alertas_globales').insert({ mensaje: msg });
+        // 3. GESTIÓN DE PODER (XP, WINS, BANS)
+        async function gestionarXP(id, nuevoXP) {
+            await _supa.from('perfiles').update({ xp: nuevoXP }).eq('id', id);
+            cargarUsuariosAdm();
         }
 
-        async function addTournament() {
-            const nombre = document.getElementById('t-name').value;
-            const juego = document.getElementById('t-game').value;
-            const capacidad = document.getElementById('t-slots').value;
-            await _supa.from('torneos').insert({ nombre, juego, capacidad });
-            alert("TORNEO CREADO");
+        async function gestionarVictoria(id, nuevasWins) {
+            await _supa.from('perfiles').update({ victorias: nuevasWins }).eq('id', id);
+            cargarUsuariosAdm();
         }
 
-        async function loadTickets() {
+        async function toggleBan(id, estado) {
+            const confirmacion = confirm(estado ? "¿Deseas BANEAR a este usuario?" : "¿Deseas quitar el baneo?");
+            if(confirmacion) {
+                await _supa.from('perfiles').update({ baneado: estado }).eq('id', id);
+                registrarLog(`Estado de baneo cambiado para usuario ${id}`);
+                cargarUsuariosAdm();
+            }
+        }
+
+        // 4. TICKETS DE SOPORTE
+        async function cargarTicketsAdm() {
             const { data } = await _supa.from('tickets_soporte').select('*, perfiles(nombre)').eq('estado', 'PENDIENTE');
-            document.getElementById('ticket-list').innerHTML = data.map(t => `
-                <div class="text-[10px] bg-white/5 p-2 rounded">
-                    <b>${t.perfiles.nombre}:</b> ${t.mensaje}
-                    <button onclick="closeTicket(${t.id})" class="block text-cyan-400 mt-1">CERRAR ✓</button>
+            const box = document.getElementById('adm-lista-tickets');
+            if(data.length === 0) {
+                box.innerHTML = `<p class="text-[10px] text-zinc-600 italic">No hay tickets pendientes.</p>`;
+                return;
+            }
+            box.innerHTML = data.map(t => `
+                <div class="bg-white/[0.03] border border-white/5 p-3 rounded-lg">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-yellow-500 font-bold text-[9px] uppercase">${t.perfiles?.nombre || 'Anónimo'}</span>
+                        <span class="text-[8px] text-zinc-500">${new Date(t.created_at).toLocaleDateString()}</span>
+                    </div>
+                    <p class="text-[10px] text-zinc-300 mb-3">${t.asunto}: ${t.mensaje}</p>
+                    <button onclick="resolverTicketAdm(${t.id})" class="text-[8px] font-black uppercase text-green-500 hover:text-white transition">Marcar como Solucionado ✓</button>
                 </div>
             `).join('');
         }
 
-        loadUsers(); loadTickets();
+        async function resolverTicketAdm(id) {
+            await _supa.from('tickets_soporte').update({ estado: 'RESUELTO' }).eq('id', id);
+            cargarTicketsAdm();
+            registrarLog(`Ticket #${id} resuelto.`);
+        }
+
+        // 5. ALERTAS GLOBALES
+        async function enviarAlertaGlobal() {
+            const msg = prompt("Escribe el mensaje de ALERTA ROJA para todos los usuarios:");
+            if(msg) {
+                await _supa.from('alertas_globales').insert({ mensaje: msg, activa: true });
+                registrarLog(`Alerta global enviada: ${msg}`);
+                alert("ALERTA TRANSMITIDA");
+            }
+        }
+
+        // 6. UTILIDADES
+        function registrarLog(msg) {
+            const logBox = document.getElementById('adm-logs');
+            const time = new Date().toLocaleTimeString();
+            logBox.innerHTML = `<div>[${time}] ${msg}</div>` + logBox.innerHTML;
+        }
+
+        async function resetTemporada() {
+            if(confirm("¿ESTÁS SEGURO? Esto pondrá el XP de TODOS en 0.")) {
+                await _supa.from('perfiles').update({ xp: 0, victorias: 0 });
+                cargarUsuariosAdm();
+                alert("TEMPORADA REINICIADA");
+            }
+        }
+
+        function searchUser() {
+            const input = document.getElementById('user-search').value.toLowerCase();
+            const rows = document.querySelectorAll('#adm-lista-usuarios tr');
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(input) ? '' : 'none';
+            });
+        }
+
+        // INICIO AUTOMÁTICO
+        cargarUsuariosAdm();
+        cargarTicketsAdm();
+        
+        // Realtime para tickets nuevos
+        _supa.channel('admin_room').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tickets_soporte' }, () => cargarTicketsAdm()).subscribe();
+
     </script>
 </body>
 </html>
