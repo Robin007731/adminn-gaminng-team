@@ -3,230 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARENA NEON | ADMIN COMMAND</title>
+    <title>ARENA NEON | CONTROL TOTAL</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #f59e0b; --dark: #02040a; --glass: rgba(15, 23, 42, 0.9); }
-        body { background: var(--dark); color: white; font-family: 'Rajdhani', sans-serif; margin: 0; }
+        body { background: #02040a; color: white; font-family: 'Rajdhani', sans-serif; }
         .font-orbitron { font-family: 'Orbitron', sans-serif; }
-        .glass { background: var(--glass); border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(10px); }
-        
-        .nav-item { width: 100%; text-align: left; padding: 15px 25px; font-size: 11px; font-weight: 800; text-transform: uppercase; border-left: 4px solid transparent; transition: 0.3s; }
-        .nav-item.active { background: rgba(245, 158, 11, 0.1); border-left-color: var(--gold); color: var(--gold); }
-        
-        .view { display: none; padding: 40px; animation: fadeIn 0.3s ease; }
+        .glass { background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(10px); }
+        .nav-item { width: 100%; text-align: left; padding: 15px 25px; font-size: 11px; font-weight: 800; text-transform: uppercase; transition: 0.3s; }
+        .nav-item.active { border-left: 4px solid #f59e0b; color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
+        .view { display: none; padding: 30px; }
         .view.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        table { width: 100%; border-collapse: collapse; }
-        th { text-transform: uppercase; font-size: 10px; color: #64748b; padding: 15px; text-align: left; background: rgba(255,255,255,0.02); }
-        td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
-        
-        input { background: #000 !important; border: 1px solid #1e293b !important; color: white !important; padding: 8px; border-radius: 4px; }
-        .btn-action { background: var(--gold); color: black; font-family: 'Orbitron'; font-weight: 900; font-size: 10px; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
+        input { background: #000; border: 1px solid #334155; color: white; padding: 5px; border-radius: 4px; }
     </style>
 </head>
 <body>
 
-    <div id="lock-screen" class="fixed inset-0 z-[9999] bg-black flex items-center justify-center">
-        <div class="text-center">
-            <div class="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <h2 class="font-orbitron text-xl animate-pulse">AUTENTICANDO COMANDANTE...</h2>
-        </div>
+    <div id="lock-screen" class="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center p-6">
+        <div id="loader-icon" class="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <h2 id="lock-status" class="font-orbitron text-lg text-amber-500 animate-pulse">SISTEMA DE SEGURIDAD ACTIVADO</h2>
+        <p id="lock-detail" class="text-zinc-500 text-xs mt-2 uppercase tracking-widest">Verificando nivel de acceso...</p>
+        <button id="emergency-exit" onclick="window.location.href='index.html'" class="hidden mt-8 text-red-500 text-[10px] font-bold border border-red-500/30 px-4 py-2 rounded">CANCELAR Y VOLVER</button>
     </div>
 
     <div class="flex min-h-screen">
-        <aside class="w-72 glass border-r border-white/10 flex flex-col">
+        <aside class="w-64 glass border-r border-white/10">
             <div class="p-8 border-b border-white/5">
-                <h1 class="font-orbitron text-2xl font-black italic">ARENA<span class="text-amber-500">ADMIN</span></h1>
+                <h1 class="font-orbitron text-xl font-black">ADMIN<span class="text-amber-500">_NEON</span></h1>
             </div>
-            <nav class="flex-1 py-4">
-                <button onclick="switchView('users')" id="nav-users" class="nav-item active">👤 Usuarios</button>
-                <button onclick="switchView('tourneys')" id="nav-tourneys" class="nav-item">⚔️ Torneos</button>
-                <button onclick="switchView('tickets')" id="nav-tickets" class="nav-item">📩 Tickets</button>
+            <nav class="mt-4">
+                <button onclick="showView('users')" id="n-users" class="nav-item active">👤 Usuarios</button>
+                <button onclick="showView('tourneys')" id="n-tourneys" class="nav-item">⚔️ Torneos</button>
+                <button onclick="showView('tickets')" id="n-tickets" class="nav-item">📩 Tickets</button>
             </nav>
-            <div class="p-6 border-t border-white/5">
-                <button onclick="window.location.href='index.html'" class="text-[10px] font-bold text-zinc-500 hover:text-white uppercase">Sincronizar con Arena</button>
-            </div>
         </aside>
 
         <main class="flex-1 overflow-y-auto">
-            
-            <section id="view-users" class="view active">
-                <h3 class="font-orbitron text-2xl mb-8">GUERREROS REGISTRADOS</h3>
-                <div class="glass rounded-xl overflow-hidden">
-                    <table>
+            <section id="v-users" class="view active">
+                <h3 class="font-orbitron text-2xl mb-6 uppercase">Base de Datos</h3>
+                <div class="glass rounded-xl p-4">
+                    <table class="w-full text-left">
                         <thead>
-                            <tr>
-                                <th>Nombre</th>
-                                <th>XP</th>
-                                <th>Victorias</th>
-                                <th>Estado</th>
-                                <th>Acción</th>
+                            <tr class="text-zinc-500 text-[10px] uppercase">
+                                <th class="p-2">Usuario</th>
+                                <th class="p-2">XP</th>
+                                <th class="p-2">Wins</th>
+                                <th class="p-2">Admin</th>
+                                <th class="p-2">Acción</th>
                             </tr>
                         </thead>
-                        <tbody id="table-users-body"></tbody>
+                        <tbody id="user-list"></tbody>
                     </table>
                 </div>
             </section>
 
-            <section id="view-tourneys" class="view">
-                <div class="flex justify-between items-center mb-8">
-                    <h3 class="font-orbitron text-2xl">GESTIÓN DE ARENAS</h3>
-                    <button onclick="toggleModal(true)" class="btn-action">+ CREAR TORNEO</button>
+            <section id="v-tourneys" class="view">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="font-orbitron text-2xl uppercase">Torneos</h3>
+                    <button onclick="createNewTourney()" class="bg-amber-500 text-black font-bold px-4 py-2 rounded text-xs">NUEVA ARENA</button>
                 </div>
-                <div id="admin-tourneys-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+                <div id="tourney-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
             </section>
 
-            <section id="view-tickets" class="view">
-                <h3 class="font-orbitron text-2xl mb-8">MENSAJES DE SOPORTE</h3>
-                <div id="admin-tickets-list" class="space-y-4"></div>
+            <section id="v-tickets" class="view">
+                <h3 class="font-orbitron text-2xl mb-6 uppercase">Soporte</h3>
+                <div id="ticket-list" class="space-y-4"></div>
             </section>
-
         </main>
-    </div>
-
-    <div id="modal-t" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-6 z-[5000]">
-        <div class="glass p-8 rounded-2xl w-full max-w-md">
-            <h4 class="font-orbitron text-lg mb-6 text-amber-500">NUEVA BATALLA</h4>
-            <div class="space-y-4">
-                <input id="in-name" type="text" placeholder="NOMBRE DEL TORNEO" class="w-full">
-                <input id="in-game" type="text" placeholder="JUEGO (FREE FIRE, ETC)" class="w-full">
-                <div class="grid grid-cols-2 gap-4">
-                    <input id="in-cap" type="number" placeholder="CAPACIDAD" value="16" class="w-full">
-                    <input id="in-ins" type="number" placeholder="INSCRITOS" value="0" class="w-full">
-                </div>
-                <div class="flex gap-4 pt-4">
-                    <button onclick="createTourney()" class="flex-1 btn-action">PUBLICAR</button>
-                    <button onclick="toggleModal(false)" class="flex-1 text-xs font-bold">CANCELAR</button>
-                </div>
-            </div>
-        </div>
     </div>
 
     <script>
         const _supa = supabase.createClient('https://qxvqxdsfcvdmanxtzmkn.supabase.co', 'sb_publishable_X2_itSXVSMUgkZeDLSE3KQ_HxD1Jf07');
 
-        // SEGURIDAD DE RUTA
-        async function validateAdmin() {
-            try {
-                const { data: { session } } = await _supa.auth.getSession();
-                if(!session) return window.location.href = 'index.html';
+        // --- SISTEMA DE SEGURIDAD REFORZADO ---
+        async function runSecurityCheck() {
+            const detail = document.getElementById('lock-detail');
+            const exitBtn = document.getElementById('emergency-exit');
+            
+            // Timeout de emergencia: si en 7 segundos no carga, muestra botón de salida
+            setTimeout(() => { 
+                exitBtn.classList.remove('hidden');
+                detail.innerText = "LA RESPUESTA ESTÁ TARDANDO DEMASIADO...";
+            }, 7000);
 
-                const { data: profile, error } = await _supa.from('perfiles').select('is_admin').eq('id', session.user.id).single();
+            try {
+                detail.innerText = "CONECTANDO CON EL SERVIDOR...";
+                const { data: { session }, error: authError } = await _supa.auth.getSession();
                 
-                if(profile && profile.is_admin) {
+                if (authError || !session) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                detail.innerText = "VALIDANDO PERMISOS DE MANDO...";
+                const { data: profile, error: profError } = await _supa.from('perfiles')
+                    .select('is_admin')
+                    .eq('id', session.user.id)
+                    .single();
+
+                if (profError || !profile || !profile.is_admin) {
+                    alert("ACCESO DENEGADO: No tienes permisos de administrador.");
+                    window.location.href = 'index.html';
+                } else {
+                    // TODO CORRECTO
                     document.getElementById('lock-screen').style.display = 'none';
                     loadUsers();
-                } else {
-                    alert("ACCESO DENEGADO: NO ERES ADMINISTRADOR");
-                    window.location.href = 'index.html';
                 }
-            } catch (e) {
-                console.error(e);
-                window.location.href = 'index.html';
+            } catch (err) {
+                detail.innerText = "ERROR CRÍTICO: " + err.message;
+                console.error(err);
             }
         }
-        validateAdmin();
 
-        // CAMBIO DE VISTAS
-        function switchView(v) {
-            document.querySelectorAll('.view').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-            document.getElementById('view-' + v).classList.add('active');
-            document.getElementById('nav-' + v).classList.add('active');
-            
+        // --- FUNCIONES DE NAVEGACION ---
+        function showView(v) {
+            document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+            document.getElementById('v-' + v).classList.add('active');
+            document.getElementById('n-' + v).classList.add('active');
             if(v === 'users') loadUsers();
             if(v === 'tourneys') loadTourneys();
             if(v === 'tickets') loadTickets();
         }
 
-        // --- FUNCIONES DE DATOS ---
+        // --- LOGICA DE DATOS ---
         async function loadUsers() {
-            const { data } = await _supa.from('perfiles').select('*').order('created_at', {ascending:false});
+            const { data } = await _supa.from('perfiles').select('*').order('xp', {ascending: false});
             if(!data) return;
-            document.getElementById('table-users-body').innerHTML = data.map(u => `
-                <tr>
-                    <td class="flex items-center gap-3">
-                        <img src="${u.avatar_url}" class="w-8 h-8 rounded-full">
-                        <span class="font-bold">${u.nombre}</span>
-                    </td>
-                    <td><input type="number" value="${u.xp}" onchange="updateUser('${u.id}', 'xp', this.value)" class="w-20"></td>
-                    <td><input type="number" value="${u.victorias}" onchange="updateUser('${u.id}', 'victorias', this.value)" class="w-20"></td>
-                    <td><span class="${u.baneado ? 'text-red-500' : 'text-green-500'} font-bold">${u.baneado ? 'BANEADO' : 'ACTIVO'}</span></td>
-                    <td>
-                        <button onclick="toggleBan('${u.id}', ${u.baneado})" class="text-[10px] font-black hover:underline">
-                            ${u.baneado ? 'DESBANEAR' : 'BANEAR'}
-                        </button>
-                    </td>
+            document.getElementById('user-list').innerHTML = data.map(u => `
+                <tr class="border-b border-white/5 text-sm">
+                    <td class="p-2 flex items-center gap-2"><img src="${u.avatar_url}" class="w-6 h-6 rounded-full"> ${u.nombre}</td>
+                    <td class="p-2"><input type="number" value="${u.xp}" onchange="upd('${u.id}', 'xp', this.value)" class="w-16"></td>
+                    <td class="p-2"><input type="number" value="${u.victorias}" onchange="upd('${u.id}', 'victorias', this.value)" class="w-16"></td>
+                    <td class="p-2">${u.is_admin ? '✅' : '❌'}</td>
+                    <td class="p-2"><button onclick="ban('${u.id}', ${u.baneado})" class="text-[10px] ${u.baneado ? 'text-green-500' : 'text-red-500'} font-bold">${u.baneado ? 'REMITIR' : 'BANEAR'}</button></td>
                 </tr>
             `).join('');
         }
 
-        async function updateUser(id, field, val) {
-            const updateData = {}; updateData[field] = parseInt(val);
-            await _supa.from('perfiles').update(updateData).eq('id', id);
+        async function upd(id, field, val) {
+            const obj = {}; obj[field] = parseInt(val);
+            await _supa.from('perfiles').update(obj).eq('id', id);
         }
 
-        async function toggleBan(id, state) {
-            await _supa.from('perfiles').update({baneado: !state}).eq('id', id);
+        async function ban(id, stat) {
+            await _supa.from('perfiles').update({baneado: !stat}).eq('id', id);
             loadUsers();
-        }
-
-        // TORNEOS
-        function toggleModal(s) { document.getElementById('modal-t').style.display = s ? 'flex' : 'none'; }
-
-        async function createTourney() {
-            const n = document.getElementById('in-name').value;
-            const j = document.getElementById('in-game').value;
-            const c = document.getElementById('in-cap').value;
-            const i = document.getElementById('in-ins').value;
-            
-            const { error } = await _supa.from('torneos').insert({ nombre: n, juego: j, capacidad: c, inscritos: i });
-            if(!error) { toggleModal(false); loadTourneys(); }
         }
 
         async function loadTourneys() {
             const { data } = await _supa.from('torneos').select('*');
-            if(!data) return;
-            document.getElementById('admin-tourneys-grid').innerHTML = data.map(t => `
-                <div class="glass p-6 rounded-xl">
-                    <h4 class="font-orbitron font-bold text-amber-500">${t.nombre}</h4>
-                    <p class="text-xs text-zinc-500 mb-4">${t.juego} | ${t.inscritos}/${t.capacidad} JUGADORES</p>
-                    <button onclick="deleteT('${t.id}')" class="text-red-500 text-[10px] font-black uppercase">Eliminar Arena</button>
+            document.getElementById('tourney-list').innerHTML = data.map(t => `
+                <div class="glass p-4 rounded-xl flex justify-between items-center">
+                    <div>
+                        <p class="font-bold text-amber-500">${t.nombre}</p>
+                        <p class="text-[10px] text-zinc-500 uppercase">${t.juego} | ${t.inscritos}/${t.capacidad}</p>
+                    </div>
+                    <button onclick="delT('${t.id}')" class="text-red-500 text-xs font-black">X</button>
                 </div>
             `).join('');
         }
 
-        async function deleteT(id) {
-            if(confirm("¿ELIMINAR TORNEO?")) {
+        async function createNewTourney() {
+            const n = prompt("Nombre del Torneo:");
+            const j = prompt("Juego:");
+            if(n && j) {
+                await _supa.from('torneos').insert({ nombre: n, juego: j, capacidad: 16, inscritos: 0 });
+                loadTourneys();
+            }
+        }
+
+        async function delT(id) {
+            if(confirm("¿Borrar torneo?")) {
                 await _supa.from('torneos').delete().eq('id', id);
                 loadTourneys();
             }
         }
 
-        // TICKETS
         async function loadTickets() {
-            const { data } = await _supa.from('tickets_soporte').select('*').order('created_at', {ascending:false});
-            if(!data || data.length === 0) {
-                document.getElementById('admin-tickets-list').innerHTML = "<p class='text-zinc-500 uppercase text-xs'>No hay tickets pendientes.</p>";
-                return;
-            }
-            document.getElementById('admin-tickets-list').innerHTML = data.map(tk => `
-                <div class="glass p-4 rounded-lg border-l-2 ${tk.leido ? 'border-zinc-700 opacity-50' : 'border-amber-500'}">
-                    <p class="text-xs font-black text-amber-500 mb-2">${tk.asunto}</p>
-                    <p class="text-sm text-zinc-300 mb-4">${tk.mensaje}</p>
-                    <button onclick="markRead('${tk.id}')" class="text-[9px] font-bold text-zinc-500 uppercase">${tk.leido ? 'LEÍDO' : 'MARCAR LEÍDO'}</button>
+            const { data } = await _supa.from('tickets_soporte').select('*').order('created_at', {ascending: false});
+            document.getElementById('ticket-list').innerHTML = data.map(tk => `
+                <div class="glass p-4 rounded-xl border-l-2 ${tk.leido ? 'border-zinc-700 opacity-50' : 'border-amber-500'}">
+                    <p class="text-xs font-bold text-amber-500 uppercase">${tk.asunto}</p>
+                    <p class="text-sm mt-1">${tk.mensaje}</p>
+                    <button onclick="read('${tk.id}')" class="text-[9px] mt-2 text-zinc-500 font-bold uppercase">Marcar leído</button>
                 </div>
             `).join('');
         }
 
-        async function markRead(id) {
+        async function read(id) {
             await _supa.from('tickets_soporte').update({leido: true}).eq('id', id);
             loadTickets();
         }
+
+        // EJECUTAR AL CARGAR
+        runSecurityCheck();
     </script>
 </body>
 </html>
