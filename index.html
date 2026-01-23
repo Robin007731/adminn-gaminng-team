@@ -3,288 +3,492 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ARENA NEON | ULTIMATE MASTER</title>
+    <title>ARENA NEON | CONTROL MAESTRO</title>
     
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&family=Source+Code+Pro:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --neon: #00f2ff;
-            --pink: #ff00ff;
-            --admin: #ff3e3e;
-            --dark: #020408;
-            --glass: rgba(7, 10, 15, 0.9);
+            --admin-red: #ff2a2a;
+            --admin-bg: #030305;
+            --neon-blue: #00f2ff;
+            --glass: rgba(10, 10, 15, 0.95);
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; scroll-behavior: smooth; }
-        body { background: var(--dark); color: #fff; font-family: 'Rajdhani', sans-serif; min-height: 100vh; overflow-x: hidden; }
+        * { box-sizing: border-box; scrollbar-width: thin; scrollbar-color: var(--admin-red) transparent; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--admin-red); border-radius: 10px; }
 
-        /* --- FONDOS 4K DINÁMICOS --- */
-        .bg-system { position: fixed; inset: 0; z-index: -2; background: #000; overflow: hidden; }
-        .slide {
-            position: absolute; inset: 0; background-size: cover; background-position: center;
-            opacity: 0; animation: softFade 48s linear infinite;
+        body { 
+            background: var(--admin-bg); 
+            color: #e0e0e0; 
+            font-family: 'Rajdhani', sans-serif; 
+            margin: 0; 
+            overflow-x: hidden;
+            background-image: 
+                linear-gradient(rgba(255, 0, 0, 0.03) 1px, transparent 1px),
+                linear-gradient(90(rgba(255, 0, 0, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
         }
-        .slide:nth-child(1) { background-image: url('https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2000'); animation-delay: 0s; }
-        .slide:nth-child(2) { background-image: url('https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=2000'); animation-delay: 8s; }
-        .slide:nth-child(3) { background-image: url('https://images.unsplash.com/photo-1538481199705-c710c4e965fc?q=80&w=2000'); animation-delay: 16s; }
-        @keyframes softFade { 0%, 100% { opacity: 0; transform: scale(1.05); } 10%, 25% { opacity: 0.4; } 35% { opacity: 0; } }
-        .bg-overlay { position: fixed; inset: 0; z-index: -1; background: linear-gradient(to bottom, transparent, var(--dark) 90%); }
 
-        /* --- UI ESTILOS --- */
-        .glass { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); }
         .font-orbitron { font-family: 'Orbitron', sans-serif; }
-        
-        .btn-cyber {
-            background: transparent; border: 1px solid var(--neon); color: white;
-            font-family: 'Orbitron'; font-weight: 700; font-size: 10px;
-            text-transform: uppercase; letter-spacing: 2px;
-            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
-            transition: 0.3s; cursor: pointer; padding: 15px 35px;
+        .font-code { font-family: 'Source Code Pro', monospace; }
+
+        /* --- UI COMPONENTS --- */
+        .glass-panel { 
+            background: var(--glass); 
+            backdrop-filter: blur(20px); 
+            border: 1px solid rgba(255, 42, 42, 0.15);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-        .btn-cyber:hover { background: var(--neon); color: black; box-shadow: 0 0 20px var(--neon); }
-        .btn-admin { border-color: var(--admin); color: var(--admin); }
-        .btn-admin:hover { background: var(--admin); color: white; box-shadow: 0 0 20px var(--admin); }
 
-        .app-view { display: none; width: 100%; }
-        .app-view.active { display: block; animation: fadeInUp 0.5s ease forwards; }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .admin-btn {
+            background: transparent;
+            border: 1px solid var(--admin-red);
+            color: var(--admin-red);
+            font-family: 'Orbitron';
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+            padding: 12px 24px;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
+        }
 
-        input, select { background: rgba(0,0,0,0.6) !important; border: 1px solid rgba(255,255,255,0.1) !important; color: white !important; padding: 14px; border-radius: 12px; width: 100%; }
-        
-        /* Loader */
-        #loader { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; align-items: center; justify-content: center; transition: 0.5s; }
+        .admin-btn:hover {
+            background: var(--admin-red);
+            color: white;
+            box-shadow: 0 0 15px var(--admin-red);
+            transform: scale(1.02);
+        }
+
+        .admin-btn-blue {
+            border-color: var(--neon-blue);
+            color: var(--neon-blue);
+        }
+
+        .admin-btn-blue:hover {
+            background: var(--neon-blue);
+            color: black;
+            box-shadow: 0 0 15px var(--neon-blue);
+        }
+
+        input, select {
+            background: rgba(0,0,0,0.7) !important;
+            border: 1px solid rgba(255, 42, 42, 0.2) !important;
+            color: #fff !important;
+            padding: 12px 15px;
+            border-radius: 4px;
+            width: 100%;
+            font-family: 'Rajdhani';
+            font-weight: bold;
+        }
+
+        input:focus { border-color: var(--admin-red) !important; outline: none; box-shadow: 0 0 10px rgba(255,42,42,0.2); }
+
+        /* --- ANIMATIONS --- */
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+
+        /* --- TABLE STYLES --- */
+        .user-row { border-bottom: 1px solid rgba(255,255,255,0.03); transition: 0.3s; }
+        .user-row:hover { background: rgba(255, 42, 42, 0.05); }
+
+        .tag { font-size: 9px; font-weight: 900; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
+        .tag-red { background: rgba(255, 42, 42, 0.1); color: var(--admin-red); border: 1px solid var(--admin-red); }
+        .tag-blue { background: rgba(0, 242, 255, 0.1); color: var(--neon-blue); border: 1px solid var(--neon-blue); }
+
+        #master-loader {
+            position: fixed; inset: 0; background: #000; z-index: 10000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
     </style>
 </head>
 <body>
 
-    <div class="bg-system">
-        <div class="slide"></div><div class="slide"></div><div class="slide"></div>
-    </div>
-    <div class="bg-overlay"></div>
-
-    <div id="loader">
-        <div class="w-10 h-10 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
-    </div>
-
-    <div id="auth-screen" class="hidden min-h-screen flex items-center justify-center p-6">
-        <div class="glass p-8 rounded-[2rem] w-full max-w-md">
-            <h2 class="font-orbitron text-3xl font-black text-center mb-10 italic uppercase">Arena<span class="text-cyan-400">Neon</span></h2>
-            <form id="auth-form" class="space-y-4">
-                <div id="reg-extra" class="hidden">
-                    <div id="avatar-grid" class="grid grid-cols-5 gap-2 mb-4 max-h-32 overflow-y-auto p-2 bg-black/40 rounded-xl"></div>
-                    <input id="reg-name" type="text" placeholder="NOMBRE DE USUARIO" class="mb-4">
-                </div>
-                <input id="auth-email" type="email" placeholder="EMAIL" required>
-                <input id="auth-pass" type="password" placeholder="CONTRASEÑA" required>
-                <button type="submit" id="auth-btn" class="w-full btn-cyber">Acceder</button>
-            </form>
-            <button onclick="toggleAuth()" class="w-full text-center mt-6 text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Cambiar Registro/Login</button>
+    <div id="master-loader">
+        <div class="font-orbitron text-admin-red text-2xl font-black mb-4 animate-pulse uppercase">Arena_Neon_OS</div>
+        <div class="w-64 h-1 bg-zinc-900 rounded-full overflow-hidden">
+            <div id="load-bar" class="h-full bg-red-600 transition-all duration-500" style="width: 0%"></div>
         </div>
+        <p class="font-code text-[10px] mt-4 text-zinc-600 uppercase tracking-widest">Inicializando protocolos de comando...</p>
     </div>
 
-    <div id="app-container" class="hidden">
-        <header class="fixed top-0 w-full z-50 glass p-5 flex justify-between items-center border-b border-white/5">
-            <h1 id="logo" class="font-orbitron text-[10px] font-black text-cyan-400 tracking-widest">ARENA_MASTER_V18</h1>
-            <div class="flex gap-2">
-                <button id="admin-mode-btn" onclick="nav('admin')" class="hidden text-[9px] font-bold text-red-500 border border-red-500/30 px-3 py-1 rounded">ADMIN</button>
-                <button onclick="logout()" class="text-[9px] font-bold text-zinc-400 border border-white/10 px-3 py-1 rounded">SALIR</button>
+    <aside class="fixed left-0 top-0 h-full w-20 hover:w-64 transition-all duration-500 glass-panel z-50 overflow-hidden group">
+        <div class="flex flex-col h-full">
+            <div class="p-6 mb-10">
+                <div class="w-10 h-10 bg-red-600 rounded flex items-center justify-center font-black font-orbitron shadow-[0_0_15px_#ff0000]">A</div>
+            </div>
+            
+            <nav class="flex-grow flex flex-col gap-2 px-3">
+                <button onclick="changeSection('dashboard')" class="flex items-center gap-4 p-4 rounded hover:bg-red-600/10 text-zinc-400 hover:text-red-500 transition">
+                    <span>📊</span> <span class="group-hover:block hidden font-bold text-xs">DASHBOARD</span>
+                </button>
+                <button onclick="changeSection('users')" class="flex items-center gap-4 p-4 rounded hover:bg-red-600/10 text-zinc-400 hover:text-red-500 transition">
+                    <span>👥</span> <span class="group-hover:block hidden font-bold text-xs">USUARIOS</span>
+                </button>
+                <button onclick="changeSection('tournaments')" class="flex items-center gap-4 p-4 rounded hover:bg-red-600/10 text-zinc-400 hover:text-red-500 transition">
+                    <span>⚔️</span> <span class="group-hover:block hidden font-bold text-xs">TORNEOS</span>
+                </button>
+            </nav>
+
+            <button onclick="exitAdmin()" class="p-6 text-zinc-600 hover:text-white transition font-bold text-[10px] uppercase">
+                Logout
+            </button>
+        </div>
+    </aside>
+
+    <main class="ml-20 p-8 min-h-screen">
+        
+        <header class="flex justify-between items-end mb-12 border-b border-red-500/10 pb-6">
+            <div>
+                <h1 class="font-orbitron text-4xl font-black tracking-tighter">CENTRAL DE <span class="text-red-600 italic">MANDO</span></h1>
+                <p class="font-code text-[10px] text-zinc-500 uppercase mt-2 tracking-widest">Nivel de autorización: Master Admin // Sincronizado en Tiempo Real</p>
+            </div>
+            <div class="text-right">
+                <div id="server-status" class="flex items-center justify-end gap-2 text-[10px] font-bold text-green-500">
+                    <span class="w-2 h-2 bg-green-500 rounded-full"></span> SERVER_ONLINE
+                </div>
+                <p id="current-date" class="font-code text-xs text-zinc-500 mt-1 uppercase"></p>
             </div>
         </header>
 
-        <main class="pt-28 pb-32 px-6 max-w-5xl mx-auto">
-            
-            <section id="view-home" class="app-view active text-center">
-                <p class="text-cyan-400 font-bold tracking-[0.5em] text-[10px] uppercase mb-4">Conexión Establecida</p>
-                <h2 class="font-orbitron text-4xl md:text-6xl font-black italic mb-8">TU LEYENDA <br> <span class="text-cyan-400">EMPIEZA AQUÍ.</span></h2>
-                <div class="glass p-6 rounded-3xl inline-block mb-10 border-cyan-500/20">
-                    <p id="u-name" class="font-orbitron text-xl uppercase tracking-tighter">---</p>
-                    <p id="u-xp" class="text-[10px] text-zinc-500 font-bold mt-1 uppercase">XP: 0 | WINS: 0</p>
+        <section id="sec-dashboard" class="view-section active fade-in">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                <div class="glass-panel p-8 rounded-xl relative overflow-hidden group">
+                    <div class="absolute -right-4 -bottom-4 text-8xl opacity-5 group-hover:scale-110 transition">👥</div>
+                    <h4 class="text-zinc-500 text-[10px] font-black uppercase mb-2">Total Operativos</h4>
+                    <p id="stat-users" class="font-orbitron text-5xl font-black">0</p>
                 </div>
-                <br>
-                <button onclick="nav('torneos')" class="btn-cyber">Ver Torneos</button>
-            </section>
+                <div class="glass-panel p-8 rounded-xl relative overflow-hidden group">
+                    <div class="absolute -right-4 -bottom-4 text-8xl opacity-5 group-hover:scale-110 transition">⚔️</div>
+                    <h4 class="text-zinc-500 text-[10px] font-black uppercase mb-2">Arenas Activas</h4>
+                    <p id="stat-tourneys" class="font-orbitron text-5xl font-black text-red-600">0</p>
+                </div>
+                <div class="glass-panel p-8 rounded-xl relative overflow-hidden group">
+                    <div class="absolute -right-4 -bottom-4 text-8xl opacity-5 group-hover:scale-110 transition">💎</div>
+                    <h4 class="text-zinc-500 text-[10px] font-black uppercase mb-2">Puntos Globales</h4>
+                    <p id="stat-xp" class="font-orbitron text-5xl font-black text-cyan-400">0</p>
+                </div>
+            </div>
 
-            <section id="view-torneos" class="app-view">
-                <h3 class="font-orbitron text-xl mb-8 uppercase italic border-l-2 border-cyan-500 pl-4">Arenas Disponibles</h3>
-                <div id="torneos-list" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
-            </section>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="glass-panel p-6 rounded-xl">
+                    <h5 class="font-orbitron text-xs mb-6 uppercase tracking-widest border-b border-white/5 pb-4 italic text-red-500">Historial de Registros Recientes</h5>
+                    <div id="recent-users" class="space-y-4">
+                        </div>
+                </div>
+                <div class="glass-panel p-6 rounded-xl">
+                    <h5 class="font-orbitron text-xs mb-6 uppercase tracking-widest border-b border-white/5 pb-4 italic text-cyan-500">Protocolo de Notificaciones</h5>
+                    <div class="bg-black/40 p-4 rounded font-code text-[10px] text-zinc-500 leading-relaxed border border-white/5">
+                        [SYS]: Esperando eventos de entrada...<br>
+                        [DB]: Sincronización con Supabase exitosa.<br>
+                        [APP]: Versión 30.0 estable.<br>
+                        <span class="text-green-500 animate-pulse">> SISTEMA LISTO PARA OPERAR.</span>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-            <section id="view-ranking" class="app-view max-w-xl mx-auto">
-                <h3 class="font-orbitron text-xl text-center mb-10 uppercase tracking-widest italic">Top Operativos</h3>
-                <div id="ranking-list" class="space-y-3"></div>
-            </section>
+        <section id="sec-users" class="view-section fade-in">
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="font-orbitron text-xl uppercase italic">Base de Datos de <span class="text-red-500">Operativos</span></h3>
+                <div class="w-64">
+                    <input type="text" id="user-search" placeholder="Buscar por nombre..." onkeyup="filterUsers()">
+                </div>
+            </div>
 
-            <section id="view-admin" class="app-view">
-                <h3 class="font-orbitron text-xl mb-8 uppercase text-red-500 italic">Panel de Control Maestro</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="glass p-6 rounded-3xl border-t border-red-500/30">
-                        <h4 class="font-orbitron text-sm mb-6 text-red-500 uppercase">Crear Nueva Arena</h4>
-                        <form id="form-torneo" class="space-y-4">
-                            <input type="text" id="t-nombre" placeholder="Nombre del Torneo">
-                            <select id="t-juego">
-                                <option value="WARZONE">WARZONE</option>
-                                <option value="FORTNITE">FORTNITE</option>
-                                <option value="FREE FIRE">FREE FIRE</option>
-                            </select>
-                            <input type="number" id="t-cap" placeholder="Capacidad Máx">
-                            <button type="submit" class="w-full btn-cyber btn-admin">Publicar Torneo</button>
+            <div class="glass-panel rounded-xl overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-red-600/10 text-[10px] uppercase font-black tracking-widest text-zinc-400">
+                        <tr>
+                            <th class="p-6">ID / Nombre</th>
+                            <th class="p-6">Nivel XP</th>
+                            <th class="p-6">Victorias</th>
+                            <th class="p-6 text-right">Acciones de Comando</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body" class="font-bold text-xs">
+                        </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="sec-tournaments" class="view-section fade-in">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1">
+                    <div class="glass-panel p-8 rounded-[2rem] sticky top-28 border-t-2 border-red-500">
+                        <h4 class="font-orbitron text-sm mb-8 text-red-500 uppercase italic">Desplegar Nueva Arena</h4>
+                        <form id="create-t-form" class="space-y-5">
+                            <div>
+                                <label class="text-[10px] font-black uppercase text-zinc-500 ml-2">Nombre del Evento</label>
+                                <input type="text" id="adm-t-name" placeholder="EJ: NEON SHOCKWAVE" required>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-black uppercase text-zinc-500 ml-2">Título de Juego</label>
+                                <select id="adm-t-game">
+                                    <option value="WARZONE">COD: WARZONE</option>
+                                    <option value="FORTNITE">FORTNITE</option>
+                                    <option value="FREE FIRE">FREE FIRE</option>
+                                    <option value="VALORANT">VALORANT</option>
+                                    <option value="LEAGUE OF LEGENDS">LEAGUE OF LEGENDS</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-black uppercase text-zinc-500 ml-2">Capacidad Máxima (Jugadores)</label>
+                                <input type="number" id="adm-t-cap" value="16" required>
+                            </div>
+                            <button type="submit" class="w-full admin-btn mt-4">Iniciar Protocolo</button>
                         </form>
                     </div>
-                    <div class="glass p-6 rounded-3xl border-t border-red-500/30 h-[400px] overflow-y-auto">
-                        <h4 class="font-orbitron text-sm mb-6 text-red-500 uppercase">Gestionar Usuarios</h4>
-                        <div id="admin-user-list" class="space-y-3"></div>
-                    </div>
                 </div>
-            </section>
-        </main>
 
-        <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 glass rounded-full flex justify-around items-center p-3 w-[85%] max-w-xs border-white/10 shadow-2xl">
-            <button onclick="nav('home')" class="p-3 text-xl hover:text-cyan-400 transition">🏠</button>
-            <button onclick="nav('torneos')" class="p-3 text-xl hover:text-cyan-400 transition">⚔️</button>
-            <button onclick="nav('ranking')" class="p-3 text-xl hover:text-cyan-400 transition">🏆</button>
-            <button onclick="nav('perfil')" class="p-3 text-xl hover:text-cyan-400 transition">👤</button>
-        </nav>
+                <div class="lg:col-span-2">
+                    <h3 class="font-orbitron text-xl uppercase italic mb-8">Arenas <span class="text-red-500">Bajo Control</span></h3>
+                    <div id="admin-t-list" class="grid grid-cols-1 gap-4">
+                        </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="edit-modal" class="hidden fixed inset-0 bg-black/90 z-[100] flex items-center justify-center p-6">
+        <div class="glass-panel p-10 rounded-[2.5rem] w-full max-w-md border-t-4 border-red-600">
+            <h4 id="edit-title" class="font-orbitron text-xl mb-8 uppercase text-center">Modificar Operativo</h4>
+            <div class="space-y-6">
+                <div>
+                    <label class="text-[10px] text-zinc-500 uppercase font-black">Puntos de Experiencia (XP)</label>
+                    <input type="number" id="edit-xp" class="text-2xl font-orbitron text-cyan-400">
+                </div>
+                <div>
+                    <label class="text-[10px] text-zinc-500 uppercase font-black">Registro de Victorias</label>
+                    <input type="number" id="edit-wins" class="text-2xl font-orbitron text-pink-500">
+                </div>
+                <div class="flex gap-4 pt-4">
+                    <button onclick="closeModal()" class="flex-1 p-4 text-[10px] font-black uppercase hover:text-white transition">Cancelar</button>
+                    <button id="save-user-btn" class="flex-1 admin-btn">Guardar Cambios</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        const SB_URL = 'https://qxvqxdsfcvdmanxtzmkn.supabase.co';
-        const SB_KEY = 'sb_publishable_X2_itSXVSMUgkZeDLSE3KQ_HxD1Jf07';
-        const _supa = supabase.createClient(SB_URL, SB_KEY);
+        // --- CONFIGURACIÓN CORE ---
+        const SUPA_URL = 'https://qxvqxdsfcvdmanxtzmkn.supabase.co';
+        const SUPA_KEY = 'sb_publishable_X2_itSXVSMUgkZeDLSE3KQ_HxD1Jf07';
+        const _admin = supabase.createClient(SUPA_URL, SUPA_KEY);
 
-        let userSession = null;
-        let isLogin = true;
-        let selAvatar = "https://api.dicebear.com/7.x/bottts/svg?seed=1";
-        const ADMIN_EMAIL = "admin@arena.com"; // CAMBIA ESTO PARA TU ACCESO ADMIN
+        let currentEditingId = null;
 
+        // --- INICIALIZACIÓN ---
         window.onload = async () => {
-            renderAvatarGrid();
-            const { data } = await _supa.auth.getSession();
-            if (data.session) {
-                userSession = data.session;
-                if(userSession.user.email === ADMIN_EMAIL) document.getElementById('admin-mode-btn').classList.remove('hidden');
-                loadProfile();
-            } else {
-                document.getElementById('auth-screen').classList.remove('hidden');
-            }
-            setTimeout(() => document.getElementById('loader').style.display = 'none', 1000);
+            document.getElementById('current-date').innerText = new Date().toLocaleString();
+            
+            // Simulación de carga estética
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 30;
+                document.getElementById('load-bar').style.width = `${progress}%`;
+                if(progress >= 100) {
+                    clearInterval(interval);
+                    document.getElementById('master-loader').style.opacity = '0';
+                    setTimeout(() => document.getElementById('master-loader').style.display = 'none', 500);
+                }
+            }, 100);
+
+            refreshAll();
         };
 
-        // --- LÓGICA DE USUARIOS ---
-        function toggleAuth() {
-            isLogin = !isLogin;
-            document.getElementById('reg-extra').classList.toggle('hidden', isLogin);
-            document.getElementById('auth-btn').innerText = isLogin ? 'Acceder' : 'Registrar';
+        function refreshAll() {
+            loadStats();
+            loadUsersList();
+            loadTournamentsList();
         }
 
-        function renderAvatarGrid() {
-            const grid = document.getElementById('avatar-grid');
-            for(let i=1; i<=10; i++) {
-                const url = `https://api.dicebear.com/7.x/bottts/svg?seed=${i}`;
-                const img = document.createElement('img');
-                img.src = url; img.className = "w-10 h-10 rounded-lg cursor-pointer border-2 border-transparent";
-                img.onclick = () => {
-                    document.querySelectorAll('#avatar-grid img').forEach(el => el.style.borderColor = 'transparent');
-                    img.style.borderColor = '#00f2ff'; selAvatar = url;
-                };
-                grid.appendChild(img);
-            }
+        // --- NAVEGACIÓN ---
+        function changeSection(id) {
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+            document.getElementById('sec-' + id).classList.add('active');
+            if(id === 'dashboard') loadStats();
+            if(id === 'users') loadUsersList();
+            if(id === 'tournaments') loadTournamentsList();
         }
 
-        document.getElementById('auth-form').onsubmit = async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('auth-email').value;
-            const pass = document.getElementById('auth-pass').value;
+        // --- MÉTTRICAS ---
+        async function loadStats() {
+            const { count: userCount } = await _admin.from('perfiles').select('*', { count: 'exact', head: true });
+            const { count: tCount } = await _admin.from('torneos').select('*', { count: 'exact', head: true });
+            const { data: xpData } = await _admin.from('perfiles').select('xp');
+            
+            const totalXp = xpData.reduce((acc, curr) => acc + (curr.xp || 0), 0);
 
-            if (isLogin) {
-                const { error } = await _supa.auth.signInWithPassword({ email, password: pass });
-                if (error) alert(error.message); else location.reload();
-            } else {
-                const name = document.getElementById('reg-name').value;
-                const { data, error } = await _supa.auth.signUp({ email, password: pass });
-                if (error) return alert(error.message);
-                await _supa.from('perfiles').insert({ id: data.user.id, nombre: name.toUpperCase(), avatar_url: selAvatar });
-                location.reload();
-            }
-        };
+            document.getElementById('stat-users').innerText = userCount || 0;
+            document.getElementById('stat-tourneys').innerText = tCount || 0;
+            document.getElementById('stat-xp').innerText = totalXp;
 
-        async function loadProfile() {
-            const { data } = await _supa.from('perfiles').select('*').eq('id', userSession.user.id).single();
-            if (data) {
-                document.getElementById('u-name').innerText = data.nombre;
-                document.getElementById('u-xp').innerText = `XP: ${data.xp} | WINS: ${data.victorias}`;
-                document.getElementById('app-container').classList.remove('hidden');
-            }
-        }
-
-        // --- NAVEGACIÓN Y VISTAS ---
-        function nav(id) {
-            document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active'));
-            document.getElementById('view-' + id).classList.add('active');
-            if(id === 'torneos') loadTorneos();
-            if(id === 'ranking') loadRanking();
-            if(id === 'admin') loadAdminData();
-        }
-
-        async function loadTorneos() {
-            const { data } = await _supa.from('torneos').select('*');
-            document.getElementById('torneos-list').innerHTML = (data || []).map(t => `
-                <div class="glass p-6 rounded-3xl border-l-2 border-cyan-500">
-                    <p class="text-[9px] text-zinc-500 uppercase font-bold">${t.juego}</p>
-                    <h4 class="font-orbitron text-lg font-black uppercase mb-4">${t.nombre}</h4>
-                    <p class="text-xs text-cyan-400 font-bold mb-6">${t.inscritos}/${t.capacidad} JUGADORES</p>
-                    <button class="w-full btn-cyber !py-2">Unirse</button>
-                </div>
-            `).join('');
-        }
-
-        async function loadRanking() {
-            const { data } = await _supa.from('perfiles').select('*').order('xp', {ascending: false});
-            document.getElementById('ranking-list').innerHTML = (data || []).map((u, i) => `
-                <div class="glass p-4 rounded-2xl flex items-center justify-between border border-white/5">
-                    <div class="flex items-center gap-4">
-                        <span class="font-orbitron text-cyan-500">#${i+1}</span>
-                        <img src="${u.avatar_url}" class="w-8 h-8 rounded-lg bg-black">
-                        <span class="font-bold text-xs uppercase">${u.nombre}</span>
+            // Usuarios recientes
+            const { data: recent } = await _admin.from('perfiles').select('*').order('created_at', {ascending: false}).limit(5);
+            const container = document.getElementById('recent-users');
+            container.innerHTML = (recent || []).map(u => `
+                <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded bg-zinc-800 flex items-center justify-center font-bold text-xs uppercase">${u.nombre.charAt(0)}</div>
+                        <span class="text-xs font-bold uppercase">${u.nombre}</span>
                     </div>
-                    <span class="font-orbitron text-xs text-white">${u.xp} XP</span>
+                    <span class="text-[9px] text-zinc-500 font-code">${new Date(u.created_at).toLocaleDateString()}</span>
                 </div>
             `).join('');
         }
 
-        // --- FUNCIONES ADMIN ---
-        async function loadAdminData() {
-            const { data: users } = await _supa.from('perfiles').select('*');
-            document.getElementById('admin-user-list').innerHTML = (users || []).map(u => `
-                <div class="flex items-center justify-between bg-black/40 p-3 rounded-xl border border-white/5">
-                    <span class="text-[10px] font-bold uppercase">${u.nombre}</span>
-                    <button onclick="editUser('${u.id}', ${u.xp})" class="text-[9px] text-red-500 font-bold border border-red-500/20 px-2 py-1 rounded">EDITAR XP</button>
+        // --- GESTIÓN DE USUARIOS ---
+        async function loadUsersList() {
+            const { data, error } = await _admin.from('perfiles').select('*').order('xp', {ascending: false});
+            const table = document.getElementById('users-table-body');
+            
+            table.innerHTML = (data || []).map(u => `
+                <tr class="user-row">
+                    <td class="p-6">
+                        <div class="flex flex-col">
+                            <span class="text-white uppercase tracking-widest">${u.nombre}</span>
+                            <span class="text-[8px] text-zinc-600 font-code">${u.id}</span>
+                        </div>
+                    </td>
+                    <td class="p-6 font-orbitron text-cyan-400">${u.xp} XP</td>
+                    <td class="p-6 font-orbitron text-pink-500">${u.victorias} WINS</td>
+                    <td class="p-6 text-right">
+                        <button onclick="openEditModal('${u.id}', '${u.nombre}', ${u.xp}, ${u.victorias})" class="admin-btn-blue text-[9px] px-3 py-1">Editar Atributos</button>
+                        <button onclick="deleteUser('${u.id}')" class="text-red-500 text-[9px] font-black ml-4 hover:underline">BORRAR</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterUsers() {
+            const query = document.getElementById('user-search').value.toUpperCase();
+            const rows = document.querySelectorAll('.user-row');
+            rows.forEach(row => {
+                const name = row.querySelector('td span').innerText;
+                row.style.display = name.includes(query) ? '' : 'none';
+            });
+        }
+
+        // --- GESTIÓN DE TORNEOS ---
+        async function loadTournamentsList() {
+            const { data } = await _admin.from('torneos').select('*').order('created_at', {ascending: false});
+            const list = document.getElementById('admin-t-list');
+            
+            list.innerHTML = (data || []).map(t => `
+                <div class="glass-panel p-6 rounded-2xl border-l-4 border-red-500 flex justify-between items-center group">
+                    <div class="flex-grow">
+                        <div class="flex items-center gap-3 mb-1">
+                            <span class="tag tag-red">${t.juego}</span>
+                            <span class="tag tag-blue">ID: ${t.id.split('-')[0]}</span>
+                        </div>
+                        <h4 class="font-orbitron text-lg font-black uppercase text-white">${t.nombre}</h4>
+                        <div class="flex items-center gap-6 mt-4">
+                            <div class="text-center">
+                                <p class="text-[8px] text-zinc-500 uppercase">Ocupación</p>
+                                <p class="font-bold text-xs">${t.inscritos} / ${t.capacidad}</p>
+                            </div>
+                            <div class="h-1 flex-grow bg-white/5 rounded-full max-w-[100px] overflow-hidden">
+                                <div class="h-full bg-red-600" style="width: ${(t.inscritos/t.capacidad)*100}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <button onclick="updateCupos('${t.id}', ${t.inscritos + 1})" class="text-[10px] bg-zinc-800 hover:bg-zinc-700 px-3 py-1 rounded font-bold">+1</button>
+                        <button onclick="updateCupos('${t.id}', ${t.inscritos - 1})" class="text-[10px] bg-zinc-800 hover:bg-zinc-700 px-3 py-1 rounded font-bold">-1</button>
+                        <button onclick="deleteTournament('${t.id}')" class="text-red-500 text-[10px] font-black mt-2">ELIMINAR</button>
+                    </div>
                 </div>
             `).join('');
         }
 
-        async function editUser(id, xp) {
-            const newXp = prompt("Ingresa nuevo XP:", xp);
-            if(newXp) {
-                await _supa.from('perfiles').update({ xp: parseInt(newXp) }).eq('id', id);
-                loadAdminData();
-            }
-        }
-
-        document.getElementById('form-torneo').onsubmit = async (e) => {
+        document.getElementById('create-t-form').onsubmit = async (e) => {
             e.preventDefault();
-            const { error } = await _supa.from('torneos').insert({
-                nombre: document.getElementById('t-nombre').value.toUpperCase(),
-                juego: document.getElementById('t-juego').value,
-                capacidad: parseInt(document.getElementById('t-cap').value),
+            const name = document.getElementById('adm-t-name').value;
+            const game = document.getElementById('adm-t-game').value;
+            const cap = document.getElementById('adm-t-cap').value;
+
+            const { error } = await _admin.from('torneos').insert({
+                nombre: name.toUpperCase(),
+                juego: game,
+                capacidad: parseInt(cap),
                 inscritos: 0
             });
-            if(!error) { alert("TORNEO CREADO"); e.target.reset(); }
+
+            if(!error) {
+                alert("ARENA DESPLEGADA");
+                e.target.reset();
+                loadTournamentsList();
+                loadStats();
+            }
         };
 
-        async function logout() { await _supa.auth.signOut(); location.reload(); }
+        async function updateCupos(id, newVal) {
+            if(newVal < 0) return;
+            await _admin.from('torneos').update({ inscritos: newVal }).eq('id', id);
+            loadTournamentsList();
+        }
+
+        async function deleteTournament(id) {
+            if(confirm("¿CONFIRMA DESTRUCCIÓN DE ARENA?")) {
+                await _admin.from('torneos').delete().eq('id', id);
+                loadTournamentsList();
+                loadStats();
+            }
+        }
+
+        // --- MODAL & EDICIÓN ---
+        function openEditModal(id, nombre, xp, wins) {
+            currentEditingId = id;
+            document.getElementById('edit-title').innerText = nombre;
+            document.getElementById('edit-xp').value = xp;
+            document.getElementById('edit-wins').value = wins;
+            document.getElementById('edit-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('edit-modal').classList.add('hidden');
+        }
+
+        document.getElementById('save-user-btn').onclick = async () => {
+            const newXp = document.getElementById('edit-xp').value;
+            const newWins = document.getElementById('edit-wins').value;
+
+            const { error } = await _admin.from('perfiles').update({
+                xp: parseInt(newXp),
+                victorias: parseInt(newWins)
+            }).eq('id', currentEditingId);
+
+            if(!error) {
+                closeModal();
+                loadUsersList();
+                loadStats();
+            }
+        };
+
+        async function deleteUser(id) {
+            if(confirm("¿ELIMINAR PERMANENTEMENTE AL OPERATIVO?")) {
+                // Nota: Esto solo borra el perfil en la tabla, no el usuario en Auth de Supabase (requiere Admin SDK)
+                await _admin.from('perfiles').delete().eq('id', id);
+                loadUsersList();
+                loadStats();
+            }
+        }
+
+        function exitAdmin() {
+            if(confirm("¿Cerrar sesión de comando?")) {
+                location.href = 'index.html';
+            }
+        }
     </script>
 </body>
 </html>
