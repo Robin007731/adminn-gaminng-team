@@ -3,210 +3,167 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEON ADMIN | Command Center</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>ZONA GAMER | Panel Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --cyan: #36f0ff; --pink: #ff4fd8; --bg: #02050a; }
-        body { font-family: 'Rajdhani', sans-serif; background: var(--bg); color: #fff; overflow: hidden; }
-        .glass { background: rgba(10, 15, 25, 0.8); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.05); }
-        .sidebar-link { border-left: 3px solid transparent; transition: 0.3s; cursor: pointer; }
-        .sidebar-link.active { border-left-color: var(--cyan); background: rgba(54, 240, 255, 0.1); color: var(--cyan); }
-        input, select, textarea { background: rgba(0,0,0,0.4) !important; border: 1px solid rgba(255,255,255,0.1) !important; color: white !important; }
-        .status-badge { padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-thumb { background: var(--cyan); border-radius: 10px; }
+        :root { --primary: #7289da; --bg: #05070a; --accent: #00ff88; --card: #1a1d24; }
+        body { font-family: 'Rajdhani', sans-serif; background: var(--bg); color: white; padding: 20px; }
+        .container { max-width: 600px; margin: auto; }
+        .card { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #333; margin-bottom: 20px; }
+        input, textarea, select { 
+            width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; 
+            background: #000; color: white; box-sizing: border-box; font-family: 'Rajdhani';
+        }
+        button { 
+            width: 100%; padding: 15px; background: var(--primary); border: none; color: white; 
+            font-weight: bold; border-radius: 10px; cursor: pointer; text-transform: uppercase;
+        }
+        .btn-finish { background: #ff4d4d; margin-top: 10px; }
+        .tournament-item { border-bottom: 1px solid #333; padding: 15px 0; display: flex; justify-content: space-between; align-items: center; }
+        .points-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
     </style>
 </head>
-<body class="flex h-screen">
+<body>
 
-    <aside class="w-64 bg-[#050810] border-r border-white/5 flex flex-col">
-        <div class="p-6 font-orbitron font-black text-xl text-[var(--cyan)]">NEON_ADMIN</div>
-        
-        <nav class="flex-grow p-4 space-y-2">
-            <div onclick="showTab('tab-torneos')" class="sidebar-link active p-3 flex items-center gap-3 font-bold uppercase text-xs tracking-widest"><span>🏆</span> Torneos</div>
-            <div onclick="showTab('tab-usuarios')" class="sidebar-link p-3 flex items-center gap-3 font-bold uppercase text-xs tracking-widest"><span>👤</span> Usuarios</div>
-            <div onclick="showTab('tab-soporte')" class="sidebar-link p-3 flex items-center gap-3 font-bold uppercase text-xs tracking-widest"><span>✉️</span> Soporte <span id="soporte-count" class="bg-pink-600 text-white text-[9px] px-1 rounded-full">0</span></div>
-        </nav>
+    <div class="container">
+        <h1 style="color: var(--accent);">👑 PANEL ADMINISTRADOR</h1>
 
-        <div class="p-4 border-t border-white/5 text-[10px] text-gray-500 font-bold uppercase">
-            Sistema v2.1 — <span class="text-green-500">Online</span>
+        <div class="card">
+            <h3>NUEVO TORNEO</h3>
+            <input type="text" id="t-name" placeholder="Nombre del Torneo">
+            <textarea id="t-desc" placeholder="Descripción / Reglas"></textarea>
+            <input type="number" id="t-cap" placeholder="Cupos (Jugadores)">
+            
+            <p style="font-size: 14px; margin: 10px 0 0 0;">PUNTOS POR PUESTO:</p>
+            <div class="points-grid">
+                <input type="number" id="p1" placeholder="1° Lugar">
+                <input type="number" id="p2" placeholder="2° Lugar">
+                <input type="number" id="p3" placeholder="3° Lugar">
+            </div>
+            
+            <button onclick="createTournament()">🚀 PUBLICAR TORNEO AL INSTANTE</button>
         </div>
-    </aside>
 
-    <main class="flex-grow p-8 overflow-y-auto">
-        
-        <section id="tab-torneos" class="tab-content animate-fade-in">
-            <header class="flex justify-between items-center mb-10">
-                <h1 class="font-orbitron text-3xl font-black italic">GESTOR DE <span class="text-[var(--cyan)]">TORNEOS</span></h1>
-                <button onclick="openModal('modal-torneo')" class="bg-[var(--cyan)] text-black font-black px-6 py-2 rounded font-orbitron text-xs">NUEVO DESPLIEGUE</button>
-            </header>
+        <div class="card">
+            <h3>GESTIONAR TORNEOS ACTIVOS</h3>
+            <div id="active-list">Cargando...</div>
+        </div>
+    </div>
 
-            <div class="glass overflow-hidden rounded-xl">
-                <table class="w-full text-left text-sm">
-                    <thead class="bg-white/5 font-orbitron text-[10px] uppercase text-gray-400">
-                        <tr>
-                            <th class="p-4">Evento</th>
-                            <th>Juego</th>
-                            <th>Inscritos</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="lista-torneos" class="divide-y divide-white/5">
-                        </tbody>
-                </table>
-            </div>
-        </section>
-
-        <section id="tab-usuarios" class="tab-content hidden animate-fade-in">
-            <h1 class="font-orbitron text-3xl font-black italic mb-10 text-[var(--pink)]">BASE DE <span class="text-white">DATOS NEURAL</span></h1>
-            <div class="glass overflow-hidden rounded-xl">
-                <table class="w-full text-left text-sm">
-                    <thead class="bg-white/5 font-orbitron text-[10px] uppercase text-gray-400">
-                        <tr>
-                            <th class="p-4">Player</th>
-                            <th>ID Usuario</th>
-                            <th>Victorias</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="lista-usuarios" class="divide-y divide-white/5"></tbody>
-                </table>
-            </div>
-        </section>
-
-        <section id="tab-soporte" class="tab-content hidden animate-fade-in">
-            <h1 class="font-orbitron text-3xl font-black italic mb-10">BANDEJA DE <span class="text-yellow-500">TICKETS</span></h1>
-            <div id="lista-soporte" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-        </section>
-
-    </main>
-
-    <div id="modal-torneo" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-        <div class="glass w-full max-w-md p-8 relative">
-            <button onclick="closeModal('modal-torneo')" class="absolute top-4 right-4 text-gray-500 hover:text-white">✕</button>
-            <h3 class="font-orbitron text-xl font-black mb-6 text-[var(--cyan)]">CONFIGURACIÓN DE TORNEO</h3>
-            <div class="space-y-4">
-                <input type="text" id="t-nombre" placeholder="Nombre del Evento" class="w-full p-3 rounded bg-black outline-none border-white/10 focus:border-[var(--cyan)]">
-                <input type="text" id="t-juego" placeholder="Juego (FREE FIRE, LOL, etc)" class="w-full p-3 rounded bg-black outline-none border-white/10">
-                <input type="number" id="t-capacidad" placeholder="Capacidad Máxima" class="w-full p-3 rounded bg-black outline-none border-white/10">
-                <button onclick="createTournament()" class="w-full bg-[var(--cyan)] text-black font-black py-4 rounded font-orbitron text-xs">INICIAR PROTOCOLO</button>
-            </div>
+    <div id="finish-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); padding:20px; box-sizing:border-box; z-index:1000;">
+        <div class="card">
+            <h2 style="color:var(--accent);">FINALIZAR Y ASIGNAR PUNTOS</h2>
+            <p id="finish-title"></p>
+            
+            <label>1° PUESTO (GANADOR):</label>
+            <select id="winner1"></select>
+            
+            <label>2° PUESTO:</label>
+            <select id="winner2"></select>
+            
+            <label>3° PUESTO:</label>
+            <select id="winner3"></select>
+            
+            <button onclick="submitResults()">CONFIRMAR RESULTADOS Y DAR PUNTOS</button>
+            <button onclick="closeModal()" style="background:none;">CANCELAR</button>
         </div>
     </div>
 
     <script>
-        // CONFIGURACIÓN SUPABASE
-        const SUPABASE_URL = 'https://TU_PROYECTO.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_X2_itSXVSMUgkZeDLSE3KQ_HxD1Jf07';
+        const SUPABASE_URL = 'https://oeczrnwfuqsifthqvktp.supabase.co';
+        const SUPABASE_KEY = 'TU_KEY_ANON_AQUI'; // USA LA MISMA QUE EN EL CLIENTE
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- NAVEGACIÓN ---
-        function showTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
-            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
-            document.getElementById(tabId).classList.remove('hidden');
-            event.currentTarget.classList.add('active');
-        }
+        let currentTournamentId = null;
+        let pointsToGive = { p1: 0, p2: 0, p3: 0 };
 
-        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
-        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-
-        // --- GESTIÓN DE TORNEOS ---
-        async function loadTournaments() {
-            const { data } = await _supabase.from('torneos').select('*').order('created_at', { ascending: false });
-            document.getElementById('lista-torneos').innerHTML = data.map(t => `
-                <tr>
-                    <td class="p-4 font-bold uppercase">${t.nombre}</td>
-                    <td class="text-[var(--cyan)] font-bold">${t.juego}</td>
-                    <td>${t.inscritos} / ${t.capacidad}</td>
-                    <td><span class="status-badge bg-green-500/10 text-green-500">${t.estado.toUpperCase()}</span></td>
-                    <td class="space-x-4">
-                        <button onclick="deleteTournament('${t.id}')" class="text-red-500 text-xs hover:underline">BORRAR</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
+        // 1. Crear Torneo
         async function createTournament() {
-            const nombre = document.getElementById('t-nombre').value;
-            const juego = document.getElementById('t-juego').value;
-            const capacidad = document.getElementById('t-capacidad').value;
-            
-            await _supabase.from('torneos').insert([{ nombre, juego, capacidad: parseInt(capacidad) }]);
-            closeModal('modal-torneo');
-            loadTournaments();
-        }
+            const name = document.getElementById('t-name').value;
+            const description = document.getElementById('t-desc').value;
+            const capacity = document.getElementById('t-cap').value;
+            const p1 = document.getElementById('p1').value;
+            const p2 = document.getElementById('p2').value;
+            const p3 = document.getElementById('p3').value;
 
-        async function deleteTournament(id) {
-            if(confirm('¿Eliminar torneo definitivamente?')) {
-                await _supabase.from('torneos').delete().eq('id', id);
-                loadTournaments();
+            if(!name || !p1) return alert("Completa los datos");
+
+            const { error } = await _supabase.from('tournaments').insert([{
+                name, description, capacity, 
+                points_json: { p1, p2, p3 }, // Guardamos los puntos en un JSON
+                status: 'active'
+            }]);
+
+            if(error) alert(error.message);
+            else {
+                alert("¡Torneo publicado!");
+                location.reload();
             }
         }
 
-        // --- GESTIÓN DE USUARIOS (PERFILES) ---
-        async function loadUsers() {
-            const { data } = await _supabase.from('perfiles').select('*');
-            document.getElementById('lista-usuarios').innerHTML = data.map(u => `
-                <tr>
-                    <td class="p-4 flex items-center gap-3">
-                        <img src="${u.avatar_url}" class="w-8 h-8 rounded-full border border-[var(--cyan)]">
-                        <span class="font-bold">${u.nombre}</span>
-                    </td>
-                    <td class="text-gray-500 text-[10px] font-mono">${u.id}</td>
-                    <td>${u.victorias}</td>
-                    <td><span class="status-badge ${u.baneado ? 'bg-red-500/20 text-red-500' : 'bg-blue-500/20 text-blue-500'}">${u.baneado ? 'BANEADO' : 'ACTIVO'}</span></td>
-                    <td>
-                        <button onclick="toggleBan('${u.id}', ${u.baneado})" class="text-xs ${u.baneado ? 'text-green-500' : 'text-red-500'}">
-                            ${u.baneado ? 'UNBAN' : 'BAN'}
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        async function toggleBan(id, currentStatus) {
-            await _supabase.from('perfiles').update({ baneado: !currentStatus }).eq('id', id);
-            loadUsers();
-        }
-
-        // --- GESTIÓN DE SOPORTE (TICKETS) ---
-        async function loadTickets() {
-            const { data } = await _supabase.from('tickets_soporte').select(`*, perfiles(nombre)`).order('created_at', { ascending: false });
-            document.getElementById('soporte-count').innerText = data.filter(t => !t.leido).length;
-            document.getElementById('lista-soporte').innerHTML = data.map(t => `
-                <div class="glass p-6 ${!t.leido ? 'border-l-4 border-yellow-500' : 'opacity-60'}">
-                    <div class="flex justify-between items-start mb-4">
-                        <p class="font-bold uppercase text-[var(--cyan)] text-xs">${t.perfiles.nombre}</p>
-                        <span class="text-[9px] text-gray-500 font-mono">${new Date(t.created_at).toLocaleString()}</span>
-                    </div>
-                    <p class="text-sm font-bold mb-1">${t.asunto}</p>
-                    <p class="text-xs text-gray-400 mb-4">${t.mensaje}</p>
-                    ${!t.leido ? `<button onclick="markRead('${t.id}')" class="text-[10px] font-bold text-yellow-500">MARCAR COMO LEÍDO</button>` : '<span class="text-[9px] uppercase font-bold text-gray-600 italic">Resuelto</span>'}
+        // 2. Cargar Torneos Activos
+        async function loadActive() {
+            const { data } = await _supabase.from('tournaments').select('*').eq('status', 'active');
+            const list = document.getElementById('active-list');
+            list.innerHTML = data.map(t => `
+                <div class="tournament-item">
+                    <span>${t.name}</span>
+                    <button class="btn-finish" onclick="openFinish('${t.id}', '${t.name}', ${JSON.stringify(t.points_json)})">FINALIZAR</button>
                 </div>
-            `).join('');
+            `).join('') || "No hay torneos activos.";
         }
 
-        async function markRead(id) {
-            await _supabase.from('tickets_soporte').update({ leido: true }).eq('id', id);
-            loadTickets();
+        // 3. Abrir Modal de Cierre
+        async function openFinish(id, name, points) {
+            currentTournamentId = id;
+            pointsToGive = points;
+            document.getElementById('finish-title').innerText = "Torneo: " + name;
+            
+            // Cargar usuarios para el SELECT
+            const { data: users } = await _supabase.from('profiles').select('id, username');
+            const selects = ['winner1', 'winner2', 'winner3'];
+            
+            selects.forEach(s => {
+                const el = document.getElementById(s);
+                el.innerHTML = '<option value="">Selecciona un jugador</option>' + 
+                    users.map(u => `<option value="${u.id}">${u.username}</option>`).join('');
+            });
+            
+            document.getElementById('finish-modal').style.display = 'block';
         }
 
-        // --- REALTIME SYNC ---
-        _supabase.channel('admin-sync')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'torneos' }, () => loadTournaments())
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'perfiles' }, () => loadUsers())
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'tickets_soporte' }, () => loadTickets())
-            .subscribe();
+        // 4. Procesar Resultados y Sumar Puntos
+        async function submitResults() {
+            const w1 = document.getElementById('winner1').value;
+            const w2 = document.getElementById('winner2').value;
+            const w3 = document.getElementById('winner3').value;
 
-        // INICIO
-        loadTournaments();
-        loadUsers();
-        loadTickets();
+            if(!w1) return alert("Mínimo debes poner al ganador");
+
+            // Función para sumar puntos a un perfil (debes tener la columna 'puntos' en tu tabla profiles)
+            const addPoints = async (userId, pts) => {
+                if(!userId) return;
+                // Obtenemos puntos actuales
+                const { data } = await _supabase.from('profiles').select('puntos').eq('id', userId).single();
+                const total = (data.puntos || 0) + parseInt(pts);
+                await _supabase.from('profiles').update({ puntos: total }).eq('id', userId);
+            };
+
+            await addPoints(w1, pointsToGive.p1);
+            await addPoints(w2, pointsToGive.p2);
+            await addPoints(w3, pointsToGive.p3);
+
+            // Marcamos torneo como finalizado
+            await _supabase.from('tournaments').update({ status: 'finished' }).eq('id', currentTournamentId);
+
+            alert("¡Resultados publicados y puntos asignados!");
+            location.reload();
+        }
+
+        function closeModal() { document.getElementById('finish-modal').style.display = 'none'; }
+
+        loadActive();
     </script>
 </body>
 </html>
