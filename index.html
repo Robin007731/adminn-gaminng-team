@@ -10,75 +10,76 @@
         :root { --primary: #7289da; --bg: #05070a; --accent: #00ff88; --card: #1a1d24; }
         body { font-family: 'Rajdhani', sans-serif; background: var(--bg); color: white; padding: 20px; }
         .container { max-width: 600px; margin: auto; }
-        .card { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #333; margin-bottom: 20px; }
+        .card { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #333; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         input, textarea, select { 
             width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; 
-            background: #000; color: white; box-sizing: border-box; font-family: 'Rajdhani';
+            background: #000; color: white; box-sizing: border-box; font-family: 'Rajdhani'; font-size: 16px;
         }
         button { 
             width: 100%; padding: 15px; background: var(--primary); border: none; color: white; 
-            font-weight: bold; border-radius: 10px; cursor: pointer; text-transform: uppercase;
+            font-weight: bold; border-radius: 10px; cursor: pointer; text-transform: uppercase; font-family: 'Rajdhani'; font-size: 16px;
         }
-        .btn-finish { background: #ff4d4d; margin-top: 10px; }
+        .btn-finish { background: #ff4d4d; width: auto; padding: 8px 15px; font-size: 14px; }
         .tournament-item { border-bottom: 1px solid #333; padding: 15px 0; display: flex; justify-content: space-between; align-items: center; }
         .points-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        label { font-size: 14px; color: var(--accent); font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1 style="color: var(--accent);">👑 PANEL ADMINISTRADOR</h1>
+        <h1 style="color: var(--accent); text-align: center; text-shadow: 0 0 15px var(--accent);">👑 ZONA GAMER ADMIN</h1>
 
         <div class="card">
-            <h3>NUEVO TORNEO</h3>
-            <input type="text" id="t-name" placeholder="Nombre del Torneo">
-            <textarea id="t-desc" placeholder="Descripción / Reglas"></textarea>
-            <input type="number" id="t-cap" placeholder="Cupos (Jugadores)">
+            <h3 style="margin-top:0;">🚀 PUBLICAR NUEVO TORNEO</h3>
+            <input type="text" id="t-name" placeholder="Nombre del Torneo (Ej: Copa Warzone)">
+            <textarea id="t-desc" placeholder="Reglas o descripción corta"></textarea>
+            <input type="number" id="t-cap" placeholder="Cupos máximos">
             
-            <p style="font-size: 14px; margin: 10px 0 0 0;">PUNTOS POR PUESTO:</p>
+            <p style="font-size: 14px; margin: 10px 0 5px 0; color: #888;">PUNTOS PREMIO POR PUESTO:</p>
             <div class="points-grid">
-                <input type="number" id="p1" placeholder="1° Lugar">
-                <input type="number" id="p2" placeholder="2° Lugar">
-                <input type="number" id="p3" placeholder="3° Lugar">
+                <div><label>1°</label><input type="number" id="p1" value="100"></div>
+                <div><label>2°</label><input type="number" id="p2" value="50"></div>
+                <div><label>3°</label><input type="number" id="p3" value="25"></div>
             </div>
             
-            <button onclick="createTournament()">🚀 PUBLICAR TORNEO AL INSTANTE</button>
+            <button onclick="createTournament()">PUBLICAR AHORA</button>
         </div>
 
         <div class="card">
-            <h3>GESTIONAR TORNEOS ACTIVOS</h3>
-            <div id="active-list">Cargando...</div>
+            <h3>🎮 TORNEOS EN CURSO</h3>
+            <div id="active-list">Buscando torneos activos...</div>
         </div>
     </div>
 
-    <div id="finish-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); padding:20px; box-sizing:border-box; z-index:1000;">
-        <div class="card">
-            <h2 style="color:var(--accent);">FINALIZAR Y ASIGNAR PUNTOS</h2>
-            <p id="finish-title"></p>
+    <div id="finish-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); padding:20px; box-sizing:border-box; z-index:1000; overflow-y: auto;">
+        <div class="card" style="max-width: 500px; margin: 40px auto;">
+            <h2 style="color:var(--accent); text-align:center;">FINALIZAR TORNEO</h2>
+            <p id="finish-title" style="text-align:center; font-weight:bold;"></p>
+            <hr style="border:0; border-top:1px solid #333; margin:20px 0;">
             
-            <label>1° PUESTO (GANADOR):</label>
+            <label>🥇 PRIMER PUESTO (GANADOR):</label>
             <select id="winner1"></select>
             
-            <label>2° PUESTO:</label>
+            <label>🥈 SEGUNDO PUESTO:</label>
             <select id="winner2"></select>
             
-            <label>3° PUESTO:</label>
+            <label>🥉 TERCER PUESTO:</label>
             <select id="winner3"></select>
             
-            <button onclick="submitResults()">CONFIRMAR RESULTADOS Y DAR PUNTOS</button>
-            <button onclick="closeModal()" style="background:none;">CANCELAR</button>
+            <button onclick="submitResults()" style="background: var(--accent); color: black;">CONFIRMAR Y ENTREGAR PUNTOS</button>
+            <button onclick="closeModal()" style="background:none; border:1px solid #444; margin-top:10px;">CANCELAR</button>
         </div>
     </div>
 
     <script>
         const SUPABASE_URL = 'https://oeczrnwfuqsifthqvktp.supabase.co';
-        const SUPABASE_KEY = 'TU_KEY_ANON_AQUI'; // USA LA MISMA QUE EN EL CLIENTE
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lY3pybndmdXFzaWZ0aHF2a3RwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkzOTI2NTEsImV4cCI6MjA4NDk2ODY1MX0.j9juk2V3p_BGwz--P4foShZ3aBj28q7L41Va95aP2VQ'; 
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let currentTournamentId = null;
         let pointsToGive = { p1: 0, p2: 0, p3: 0 };
 
-        // 1. Crear Torneo
         async function createTournament() {
             const name = document.getElementById('t-name').value;
             const description = document.getElementById('t-desc').value;
@@ -87,82 +88,73 @@
             const p2 = document.getElementById('p2').value;
             const p3 = document.getElementById('p3').value;
 
-            if(!name || !p1) return alert("Completa los datos");
+            if(!name || !p1) return alert("Por favor, pon al menos el nombre y puntos.");
 
             const { error } = await _supabase.from('tournaments').insert([{
-                name, description, capacity, 
-                points_json: { p1, p2, p3 }, // Guardamos los puntos en un JSON
+                name, 
+                description, 
+                capacity, 
+                points_json: { p1, p2, p3 }, 
                 status: 'active'
             }]);
 
-            if(error) alert(error.message);
-            else {
-                alert("¡Torneo publicado!");
-                location.reload();
-            }
+            if(error) alert("Error: " + error.message);
+            else { alert("¡Torneo publicado!"); location.reload(); }
         }
 
-        // 2. Cargar Torneos Activos
         async function loadActive() {
-            const { data } = await _supabase.from('tournaments').select('*').eq('status', 'active');
+            const { data, error } = await _supabase.from('tournaments').select('*').eq('status', 'active');
+            if(error) { console.error(error); return; }
+            
             const list = document.getElementById('active-list');
             list.innerHTML = data.map(t => `
                 <div class="tournament-item">
-                    <span>${t.name}</span>
-                    <button class="btn-finish" onclick="openFinish('${t.id}', '${t.name}', ${JSON.stringify(t.points_json)})">FINALIZAR</button>
+                    <span><strong>${t.name}</strong></span>
+                    <button class="btn-finish" onclick="openFinish('${t.id}', '${t.name}', ${JSON.stringify(t.points_json)})">CERRAR Y DAR PUNTOS</button>
                 </div>
             `).join('') || "No hay torneos activos.";
         }
 
-        // 3. Abrir Modal de Cierre
         async function openFinish(id, name, points) {
             currentTournamentId = id;
             pointsToGive = points;
-            document.getElementById('finish-title').innerText = "Torneo: " + name;
+            document.getElementById('finish-title').innerText = name;
             
-            // Cargar usuarios para el SELECT
             const { data: users } = await _supabase.from('profiles').select('id, username');
-            const selects = ['winner1', 'winner2', 'winner3'];
+            const options = '<option value="">-- Seleccionar Jugador --</option>' + 
+                          users.map(u => `<option value="${u.id}">${u.username}</option>`).join('');
             
-            selects.forEach(s => {
-                const el = document.getElementById(s);
-                el.innerHTML = '<option value="">Selecciona un jugador</option>' + 
-                    users.map(u => `<option value="${u.id}">${u.username}</option>`).join('');
-            });
+            document.getElementById('winner1').innerHTML = options;
+            document.getElementById('winner2').innerHTML = options;
+            document.getElementById('winner3').innerHTML = options;
             
             document.getElementById('finish-modal').style.display = 'block';
         }
 
-        // 4. Procesar Resultados y Sumar Puntos
         async function submitResults() {
-            const w1 = document.getElementById('winner1').value;
-            const w2 = document.getElementById('winner2').value;
-            const w3 = document.getElementById('winner3').value;
+            const winners = [
+                { id: document.getElementById('winner1').value, pts: pointsToGive.p1 },
+                { id: document.getElementById('winner2').value, pts: pointsToGive.p2 },
+                { id: document.getElementById('winner3').value, pts: pointsToGive.p3 }
+            ];
 
-            if(!w1) return alert("Mínimo debes poner al ganador");
+            if(!winners[0].id) return alert("Debes seleccionar al menos el 1° Puesto");
 
-            // Función para sumar puntos a un perfil (debes tener la columna 'puntos' en tu tabla profiles)
-            const addPoints = async (userId, pts) => {
-                if(!userId) return;
-                // Obtenemos puntos actuales
-                const { data } = await _supabase.from('profiles').select('puntos').eq('id', userId).single();
-                const total = (data.puntos || 0) + parseInt(pts);
-                await _supabase.from('profiles').update({ puntos: total }).eq('id', userId);
-            };
+            for (const winner of winners) {
+                if(winner.id) {
+                    const { data: prof } = await _supabase.from('profiles').select('puntos').eq('id', winner.id).single();
+                    const nuevosPuntos = (prof.puntos || 0) + parseInt(winner.pts);
+                    await _supabase.from('profiles').update({ puntos: nuevosPuntos }).eq('id', winner.id);
+                }
+            }
 
-            await addPoints(w1, pointsToGive.p1);
-            await addPoints(w2, pointsToGive.p2);
-            await addPoints(w3, pointsToGive.p3);
-
-            // Marcamos torneo como finalizado
             await _supabase.from('tournaments').update({ status: 'finished' }).eq('id', currentTournamentId);
-
-            alert("¡Resultados publicados y puntos asignados!");
+            alert("¡Torneo finalizado con éxito!");
             location.reload();
         }
 
         function closeModal() { document.getElementById('finish-modal').style.display = 'none'; }
-
+        
         loadActive();
     </script>
 </body>
