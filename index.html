@@ -3,159 +3,255 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZONA GAMER | Panel Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>ZONA GAMER | CONTROL PANEL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #7289da; --bg: #05070a; --accent: #00ff88; --card: #1a1d24; }
-        body { font-family: 'Rajdhani', sans-serif; background: var(--bg); color: white; padding: 20px; }
-        .container { max-width: 600px; margin: auto; }
-        .card { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #333; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        input, textarea, select { 
-            width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; 
-            background: #000; color: white; box-sizing: border-box; font-family: 'Rajdhani'; font-size: 16px;
+        :root {
+            --primary: #ff0055;
+            --bg: #0a0a0f;
+            --card: #151520;
+            --text: #ffffff;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #c0392b;
         }
-        button { 
-            width: 100%; padding: 15px; background: var(--primary); border: none; color: white; 
-            font-weight: bold; border-radius: 10px; cursor: pointer; text-transform: uppercase; font-family: 'Rajdhani'; font-size: 16px;
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Rajdhani', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 260px; height: 100vh; background: #000; border-right: 2px solid var(--primary);
+            position: fixed; left: -260px; transition: 0.3s; z-index: 1000;
         }
-        .btn-finish { background: #ff4d4d; width: auto; padding: 8px 15px; font-size: 14px; }
-        .tournament-item { border-bottom: 1px solid #333; padding: 15px 0; display: flex; justify-content: space-between; align-items: center; }
-        .points-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-        label { font-size: 14px; color: var(--accent); font-weight: bold; }
+        .sidebar.active { left: 0; }
+        .menu-btn { position: fixed; top: 20px; left: 20px; font-size: 1.5rem; cursor: pointer; color: var(--primary); z-index: 1100; background: var(--card); padding: 5px 15px; border-radius: 5px; border: 1px solid var(--primary); }
+
+        .nav-link { padding: 15px 20px; display: block; color: white; text-decoration: none; border-bottom: 1px solid #111; cursor: pointer; }
+        .nav-link:hover { background: var(--primary); }
+
+        /* --- CONTENIDO --- */
+        main { flex-grow: 1; padding: 80px 20px; width: 100%; }
+        .section { display: none; max-width: 900px; margin: auto; }
+        .section.active { display: block; }
+
+        .admin-card { background: var(--card); padding: 25px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #333; }
+        h3 { font-family: 'Orbitron'; color: var(--primary); margin-bottom: 15px; text-transform: uppercase; }
+
+        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; background: #000; border: 1px solid #444; color: white; border-radius: 5px; }
+        .btn-admin { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; font-family: 'Orbitron'; font-weight: bold; width: 100%; margin-top: 10px; }
+        
+        /* --- TABLAS Y BADGES --- */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #222; }
+        th { color: var(--primary); font-family: 'Orbitron'; font-size: 0.7rem; }
+        
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
+        .status-active { background: var(--success); }
+        .status-banned { background: var(--danger); }
+        .status-suspended { background: var(--warning); }
+
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1 style="color: var(--accent); text-align: center; text-shadow: 0 0 15px var(--accent);">👑 ZONA GAMER ADMIN</h1>
+    <div class="menu-btn" onclick="toggleSidebar()">☰</div>
 
-        <div class="card">
-            <h3 style="margin-top:0;">🚀 PUBLICAR NUEVO TORNEO</h3>
-            <input type="text" id="t-name" placeholder="Nombre del Torneo (Ej: Copa Warzone)">
-            <textarea id="t-desc" placeholder="Reglas o descripción corta"></textarea>
-            <input type="number" id="t-cap" placeholder="Cupos máximos">
-            
-            <p style="font-size: 14px; margin: 10px 0 5px 0; color: #888;">PUNTOS PREMIO POR PUESTO:</p>
-            <div class="points-grid">
-                <div><label>1°</label><input type="number" id="p1" value="100"></div>
-                <div><label>2°</label><input type="number" id="p2" value="50"></div>
-                <div><label>3°</label><input type="number" id="p3" value="25"></div>
-            </div>
-            
-            <button onclick="createTournament()">PUBLICAR AHORA</button>
+    <nav class="sidebar" id="sidebar">
+        <div style="padding: 40px 20px; text-align: center;">
+            <h2 style="color: var(--primary); font-family: 'Orbitron';">ZONA ADMIN</h2>
         </div>
+        <div class="nav-link" onclick="showSection('sec-publicar')">📢 Publicaciones</div>
+        <div class="nav-link" onclick="showSection('sec-ganadores')">🏆 Dar Ganadores</div>
+        <div class="nav-link" onclick="showSection('sec-usuarios')">👥 Usuarios</div>
+        <div class="nav-link" onclick="showSection('sec-ajustes')">⚙️ Ajustes Jugadores</div>
+    </nav>
 
-        <div class="card">
-            <h3>🎮 TORNEOS EN CURSO</h3>
-            <div id="active-list">Buscando torneos activos...</div>
-        </div>
-    </div>
-
-    <div id="finish-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); padding:20px; box-sizing:border-box; z-index:1000; overflow-y: auto;">
-        <div class="card" style="max-width: 500px; margin: 40px auto;">
-            <h2 style="color:var(--accent); text-align:center;">FINALIZAR TORNEO</h2>
-            <p id="finish-title" style="text-align:center; font-weight:bold;"></p>
-            <hr style="border:0; border-top:1px solid #333; margin:20px 0;">
-            
-            <label>🥇 PRIMER PUESTO (GANADOR):</label>
-            <select id="winner1"></select>
-            
-            <label>🥈 SEGUNDO PUESTO:</label>
-            <select id="winner2"></select>
-            
-            <label>🥉 TERCER PUESTO:</label>
-            <select id="winner3"></select>
-            
-            <button onclick="submitResults()" style="background: var(--accent); color: black;">CONFIRMAR Y ENTREGAR PUNTOS</button>
-            <button onclick="closeModal()" style="background:none; border:1px solid #444; margin-top:10px;">CANCELAR</button>
-        </div>
-    </div>
-
-    <script>
-        const SUPABASE_URL = 'https://oeczrnwfuqsifthqvktp.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lY3pybndmdXFzaWZ0aHF2a3RwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkzOTI2NTEsImV4cCI6MjA4NDk2ODY1MX0.j9juk2V3p_BGwz--P4foShZ3aBj28q7L41Va95aP2VQ'; 
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        let currentTournamentId = null;
-        let pointsToGive = { p1: 0, p2: 0, p3: 0 };
-
-        async function createTournament() {
-            const name = document.getElementById('t-name').value;
-            const description = document.getElementById('t-desc').value;
-            const capacity = document.getElementById('t-cap').value;
-            const p1 = document.getElementById('p1').value;
-            const p2 = document.getElementById('p2').value;
-            const p3 = document.getElementById('p3').value;
-
-            if(!name || !p1) return alert("Por favor, pon al menos el nombre y puntos.");
-
-            const { error } = await _supabase.from('tournaments').insert([{
-                name, 
-                description, 
-                capacity, 
-                points_json: { p1, p2, p3 }, 
-                status: 'active'
-            }]);
-
-            if(error) alert("Error: " + error.message);
-            else { alert("¡Torneo publicado!"); location.reload(); }
-        }
-
-        async function loadActive() {
-            const { data, error } = await _supabase.from('tournaments').select('*').eq('status', 'active');
-            if(error) { console.error(error); return; }
-            
-            const list = document.getElementById('active-list');
-            list.innerHTML = data.map(t => `
-                <div class="tournament-item">
-                    <span><strong>${t.name}</strong></span>
-                    <button class="btn-finish" onclick="openFinish('${t.id}', '${t.name}', ${JSON.stringify(t.points_json)})">CERRAR Y DAR PUNTOS</button>
+    <main>
+        <div id="sec-publicar" class="section active">
+            <h3>Crear Nuevo Torneo</h3>
+            <div class="admin-card">
+                <input type="text" id="t-nombre" placeholder="Nombre del Torneo">
+                <textarea id="t-detalles" placeholder="Reglas, requisitos y horarios..."></textarea>
+                <div class="grid-3">
+                    <input type="number" id="pts-1" placeholder="Pts 1er">
+                    <input type="number" id="pts-2" placeholder="Pts 2do">
+                    <input type="number" id="pts-3" placeholder="Pts 3er">
                 </div>
-            `).join('') || "No hay torneos activos.";
+                <input type="number" id="pts-participacion" placeholder="Pts participación (Resto)" value="2">
+                <button class="btn-admin" onclick="publicarTorneo()">PUBLICAR TORNEO</button>
+            </div>
+        </div>
+
+        <div id="sec-ganadores" class="section">
+            <h3>Asignar Podio y Repartir Puntos</h3>
+            <div class="admin-card">
+                <label>🥇 1er Puesto</label>
+                <select id="sel-p1" class="user-list-select"></select>
+                <label>🥈 2do Puesto</label>
+                <select id="sel-p2" class="user-list-select"></select>
+                <label>🥉 3er Puesto</label>
+                <select id="sel-p3" class="user-list-select"></select>
+                <button class="btn-admin" style="background: var(--success);" onclick="repartirPuntosGral()">FINALIZAR Y REPARTIR</button>
+                <p style="font-size: 0.8rem; color: #888; margin-top: 10px;">* El resto de usuarios activos recibirá los puntos de participación automáticamente.</p>
+            </div>
+        </div>
+
+        <div id="sec-usuarios" class="section">
+            <h3>Gestión de Estado</h3>
+            <div class="admin-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>NICK</th>
+                            <th>ESTADO</th>
+                            <th>ACCIÓN</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-status"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="sec-ajustes" class="section">
+            <h3>Editar Puntos Manualmente</h3>
+            <div class="admin-card">
+                <select id="sel-edit-user" class="user-list-select"></select>
+                <input type="number" id="new-points" placeholder="Nuevos Puntos">
+                <button class="btn-admin" onclick="actualizarPuntosManual()">ACTUALIZAR PUNTOS</button>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, doc, updateDoc, increment, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAh6MqrL2KvhTfeXpEYvRNvKP-6vApMnAg",
+            authDomain: "zona-gamer-live.firebaseapp.com",
+            projectId: "zona-gamer-live",
+            storageBucket: "zona-gamer-live.firebasestorage.app",
+            messagingSenderId: "458669601177",
+            appId: "1:458669601177:web:9b45b6f259d8b1aa9ee308"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // NAVEGACIÓN
+        window.toggleSidebar = () => document.getElementById('sidebar').classList.toggle('active');
+        window.showSection = (id) => {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            toggleSidebar();
+        };
+
+        // PUBLICAR TORNEO
+        window.publicarTorneo = async () => {
+            const nombre = document.getElementById('t-nombre').value;
+            if(!nombre) return alert("Nombre obligatorio");
+            
+            await setDoc(doc(db, "tournaments", "activo"), {
+                nombre,
+                detalles: document.getElementById('t-detalles').value,
+                puntos: [
+                    parseInt(document.getElementById('pts-1').value) || 0,
+                    parseInt(document.getElementById('pts-2').value) || 0,
+                    parseInt(document.getElementById('pts-3').value) || 0
+                ],
+                puntos_extra: parseInt(document.getElementById('pts-participacion').value) || 2,
+                fecha: new Date()
+            });
+            alert("Torneo publicado");
+        };
+
+        // CARGAR USUARIOS EN TIEMPO REAL
+        const userCache = [];
+        onSnapshot(collection(db, "users"), (snapshot) => {
+            const selects = document.querySelectorAll('.user-list-select');
+            const tableStatus = document.getElementById('table-status');
+            
+            userCache.length = 0;
+            let options = '<option value="">Seleccionar Usuario...</option>';
+            tableStatus.innerHTML = "";
+
+            snapshot.forEach(snap => {
+                const user = { id: snap.id, ...snap.data() };
+                userCache.push(user);
+                
+                options += `<option value="${user.id}">${user.username}</option>`;
+                
+                tableStatus.innerHTML += `
+                    <tr>
+                        <td>${user.username}</td>
+                        <td><span class="badge ${getStatusClass(user.status)}">${user.status || 'active'}</span></td>
+                        <td>
+                            <button onclick="cambiarEstado('${user.id}', 'banned')" style="color:red">Ban</button> |
+                            <button onclick="suspender('${user.id}')" style="color:orange">Suspm</button> |
+                            <button onclick="cambiarEstado('${user.id}', 'active')" style="color:green">Act</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            selects.forEach(s => s.innerHTML = options);
+        });
+
+        const getStatusClass = (s) => {
+            if(s === 'banned') return 'status-banned';
+            if(s === 'suspended') return 'status-suspended';
+            return 'status-active';
         }
 
-        async function openFinish(id, name, points) {
-            currentTournamentId = id;
-            pointsToGive = points;
-            document.getElementById('finish-title').innerText = name;
+        // REPARTIR PUNTOS A TODOS
+        window.repartirPuntosGral = async () => {
+            const p1 = document.getElementById('sel-p1').value;
+            const p2 = document.getElementById('sel-p2').value;
+            const p3 = document.getElementById('sel-p3').value;
             
-            const { data: users } = await _supabase.from('profiles').select('id, username');
-            const options = '<option value="">-- Seleccionar Jugador --</option>' + 
-                          users.map(u => `<option value="${u.id}">${u.username}</option>`).join('');
-            
-            document.getElementById('winner1').innerHTML = options;
-            document.getElementById('winner2').innerHTML = options;
-            document.getElementById('winner3').innerHTML = options;
-            
-            document.getElementById('finish-modal').style.display = 'block';
-        }
+            const v1 = parseInt(document.getElementById('pts-1').value) || 0;
+            const v2 = parseInt(document.getElementById('pts-2').value) || 0;
+            const v3 = parseInt(document.getElementById('pts-3').value) || 0;
+            const vResto = parseInt(document.getElementById('pts-participacion').value) || 2;
 
-        async function submitResults() {
-            const winners = [
-                { id: document.getElementById('winner1').value, pts: pointsToGive.p1 },
-                { id: document.getElementById('winner2').value, pts: pointsToGive.p2 },
-                { id: document.getElementById('winner3').value, pts: pointsToGive.p3 }
-            ];
+            if(!p1) return alert("Mínimo elige el 1er puesto");
 
-            if(!winners[0].id) return alert("Debes seleccionar al menos el 1° Puesto");
+            for(let user of userCache) {
+                let suma = vResto;
+                if(user.id === p1) suma = v1;
+                else if(user.id === p2) suma = v2;
+                else if(user.id === p3) suma = v3;
 
-            for (const winner of winners) {
-                if(winner.id) {
-                    const { data: prof } = await _supabase.from('profiles').select('puntos').eq('id', winner.id).single();
-                    const nuevosPuntos = (prof.puntos || 0) + parseInt(winner.pts);
-                    await _supabase.from('profiles').update({ puntos: nuevosPuntos }).eq('id', winner.id);
-                }
+                await updateDoc(doc(db, "users", user.id), { points: increment(suma) });
             }
+            alert("¡Puntos repartidos a toda la comunidad!");
+        };
 
-            await _supabase.from('tournaments').update({ status: 'finished' }).eq('id', currentTournamentId);
-            alert("¡Torneo finalizado con éxito!");
-            location.reload();
-        }
+        // BANEOS Y SUSPENSIONES
+        window.cambiarEstado = async (uid, estado) => {
+            await updateDoc(doc(db, "users", uid), { status: estado });
+            alert("Estado actualizado");
+        };
 
-        function closeModal() { document.getElementById('finish-modal').style.display = 'none'; }
-        
-        loadActive();
+        window.suspender = async (uid) => {
+            const dias = prompt("¿Cuántos días de suspensión?");
+            if(!dias) return;
+            // Aquí podrías guardar una fecha de desbloqueo, por ahora solo marcamos el estado
+            await updateDoc(doc(db, "users", uid), { 
+                status: 'suspended',
+                unlockDate: Date.now() + (dias * 24 * 60 * 60 * 1000)
+            });
+            alert("Usuario suspendido");
+        };
+
+        window.actualizarPuntosManual = async () => {
+            const uid = document.getElementById('sel-edit-user').value;
+            const pts = parseInt(document.getElementById('new-points').value);
+            if(!uid || isNaN(pts)) return alert("Datos incompletos");
+            await updateDoc(doc(db, "users", uid), { points: pts });
+            alert("Puntos actualizados manualmente");
+        };
     </script>
 </body>
 </html>
